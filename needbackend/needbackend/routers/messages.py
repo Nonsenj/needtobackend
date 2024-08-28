@@ -4,7 +4,7 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBMessage, Message, MessageCreate, DBGroupChat, DBIndividualChat, get_session
+from ..models import DBMessage, Message, CreatedMessage, DBGroupChat, DBIndividualChat, get_session
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -52,7 +52,7 @@ async def get_individual_messages(
 @router.post("/group/{group_id}", response_model=Message)
 async def create_group_message(
     group_id: int,
-    message_info: MessageCreate,
+    message_info: CreatedMessage,
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user = Depends(deps.get_current_user)
 ) -> Message:
@@ -78,56 +78,3 @@ async def create_group_message(
     return message
 
 # Create a new message in an individual chat
-@router.post("/chat/{chat_id}", response_model=Message)
-async def create_individual_message(
-    chat_id: int,
-    message_info: MessageCreate,
-    session: Annotated[AsyncSession, Depends(get_session)],
-    current_user = Depends(deps.get_current_user)
-) -> Message:
-
-    individual_chat = await session.get(DBIndividualChat, chat_id)
-    if not individual_chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Individual chat not found.",
-        )
-
-    message = DBMessage(
-        content=message_info.content,
-        sender_id=current_user.id,
-        chat_id=chat_id,
-        timestamp=message_info.timestamp
-    )
-
-    session.add(message)
-    await session.commit()
-    await session.refresh(message)
-
-    return message
-
-# Delete a message
-@router.delete("/{message_id}")
-async def delete_message(
-    message_id: int,
-    session: Annotated[AsyncSession, Depends(get_session)],
-    current_user = Depends(deps.get_current_user)
-) -> dict:
-
-    message = await session.get(DBMessage, message_id)
-    if not message:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Message not found.",
-        )
-
-    if message.sender_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to delete this message.",
-        )
-
-    await session.delete(message)
-    await session.commit()
-
-    return {"message": "Message deleted successfully"}
