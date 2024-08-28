@@ -1,0 +1,6 @@
+test-data
+.env
+venv
+.testing.env
+__pycache__
+.pytest_cache
