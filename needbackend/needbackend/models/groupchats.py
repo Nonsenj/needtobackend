@@ -30,8 +30,8 @@ class DBGroupChat(BaseGroupChat, SQLModel, table=True):
     name: str = Field(...)
     description: Optional[str] = Field(default=None)
     
-    members: List[GroupChatMember] = Relationship(back_populates="group_chat")
-    messages: List[DBMessage] = Relationship(back_populates="group")
+    members: List["GroupChatMember"] = Relationship(back_populates="group_chat")
+    messages: List["DBMessage"] = Relationship(back_populates="group")
 
 # SQLModel for the GroupChatMember table to handle many-to-many relationships between GroupChats and Users
 class GroupChatMember(SQLModel, table=True):

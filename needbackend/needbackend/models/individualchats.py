@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, ConfigDict
 from sqlmodel import Field, SQLModel, Relationship
 from . import users
@@ -33,7 +33,7 @@ class DBIndividualChat(BaseIndividualChat, SQLModel, table=True):
     user1: Optional[users.DBUser] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user1_id]"})
     user2: Optional[users.DBUser] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user2_id]"})
     
-    messages: List[DBMessage] = Relationship(back_populates="chat")
+    messages: List["DBMessage"] = Relationship(back_populates="chat")
 
 # Pydantic model for a list of individual chats
 class IndividualChatList(BaseModel):
