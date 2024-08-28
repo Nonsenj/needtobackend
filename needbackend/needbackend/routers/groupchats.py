@@ -4,14 +4,14 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBGroupChat, GroupChat, GroupChatCreate, GroupChatUpdate, GroupChatList, GroupChatMember, get_session, DBUser
+from ..models import DBGroupChat, GroupChat, CreatedGroupChat, UpdatedGroupChat, GroupChatList, GroupChatMember, get_session, DBUser
 
 router = APIRouter(prefix="/groupchats", tags=["groupchats"])
 
 # Create a new group chat
 @router.post("/", response_model=GroupChat)
 async def create_group_chat(
-    group_chat_info: GroupChatCreate,
+    group_chat_info: CreatedGroupChat,
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user = Depends(deps.get_current_user)
 ) -> GroupChat:
@@ -76,7 +76,7 @@ async def add_member_to_group_chat(
 @router.put("/{group_chat_id}", response_model=GroupChat)
 async def update_group_chat(
     group_chat_id: int,
-    group_chat_update: GroupChatUpdate,
+    group_chat_update: UpdatedGroupChat,
     session: Annotated[AsyncSession, Depends(get_session)],
     current_user = Depends(deps.get_current_user)
 ) -> GroupChat:

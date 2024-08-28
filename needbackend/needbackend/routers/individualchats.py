@@ -4,7 +4,7 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBIndividualChat, IndividualChat, IndividualChatCreate, IndividualChatList, get_session, DBUser
+from ..models import DBIndividualChat, IndividualChat, CreatedIndividualChat, IndividualChatList, get_session, DBUser
 
 router = APIRouter(prefix="/individualchats", tags=["individualchats"])
 
