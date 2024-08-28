@@ -1,2 +1,2 @@
-poetry run uvicorn "digimon.main:create_app" --factory --reload
+poetry run uvicorn "needbackend.main:create_app" --factory --reload
 

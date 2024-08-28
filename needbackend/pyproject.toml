@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "digimon"
+name = "needbackend"
 version = "0.1.0"
 description = ""
 authors = ["Thanathip Limna <boatkrap@gmail.com>"]
