@@ -62,6 +62,14 @@ async def get_current_active_superuser(
         )
     return current_user
 
+async def get_current_admin(
+    current_user: typing.Annotated[models.User, Depends(get_current_active_user)],
+) -> models.User:
+    if "admin" not in current_user.roles and "superadmin" not in current_user.roles:
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return current_user
 
 class RoleChecker:
     def __init__(self, *allowed_roles: list[str]):
