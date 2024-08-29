@@ -47,6 +47,31 @@ async def list_group_chats(
 
     return group_chats
 
+@router.post("/noauth", response_model=GroupChat)
+async def create_anonymous_group_chat(
+    group_chat_info: CreatedGroupChat,
+    session: Annotated[AsyncSession, Depends(get_session)]
+) -> GroupChat:
+
+    group_chat = DBGroupChat(
+        name=group_chat_info.name,
+        description=group_chat_info.description,
+    )
+    session.add(group_chat)
+    await session.commit()
+    await session.refresh(group_chat)
+
+    # Add a default member to the group chat (e.g. an anonymous user)
+    member = GroupChatMember(
+        user_id=None,  # or some default value
+        group_chat_id=group_chat.id
+    )
+    session.add(member)
+    await session.commit()
+
+    return group_chat
+
+
 # Add a member to a group chat
 @router.post("/{group_chat_id}/members", response_model=GroupChat)
 async def add_member_to_group_chat(

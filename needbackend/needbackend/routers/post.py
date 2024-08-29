@@ -36,6 +36,17 @@ async def read_items(
         dict(posts=posts, page_count=page_count, page=page, size_per_page=SIZE_PER_PAGE)
     )
 
+@router.post("/noauth")
+async def create_anonymous_post(
+    post: models.CreatePost,
+    session: Annotated[AsyncSession, Depends(models.get_session)]
+) -> models.Post | None:
+    db_post = models.DBPost.model_validate(post)
+    session.add(db_post)
+    await session.commit()
+    await session.refresh(db_post)
+    return models.Post.model_validate(db_post)
+
 @router.post("")
 async def create_post(
     post: models.CreatePost,

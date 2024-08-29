@@ -8,6 +8,25 @@ from .. import models
 
 router = APIRouter(prefix="/feeds", tags=["feeds"])
 
+@router.post("/noauth", response_model=models.ReadFeed)
+async def create_anonymous_feed(
+    feed_info: models.CreatedFeed,
+    session: Annotated[AsyncSession, Depends(models.get_session)]
+) -> models.ReadFeed:
+
+    feed = models.DBFeed(
+        category=feed_info.category,
+        content_id=feed_info.content_id,
+        timestamp=feed_info.timestamp,
+        user_id=None  # or some default value
+    )
+
+    session.add(feed)
+    await session.commit()
+    await session.refresh(feed)
+
+    return feed
+
 @router.post("/", response_model=models.ReadFeed)
 async def create_feed(
     feed_info: models.CreatedFeed,
