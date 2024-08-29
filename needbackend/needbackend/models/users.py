@@ -123,3 +123,12 @@ class UserProfile(BaseUser):
         for key, value in updated_data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+
+class CreatedUserProfile(UserProfile):
+    pass
+
+class UpdateUserProfile(UserProfile):
+    pass
+
+class DeleteUserProfile(UserProfile):
+    pass
