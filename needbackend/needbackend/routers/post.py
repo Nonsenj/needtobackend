@@ -49,7 +49,7 @@ async def create_post(
     return  models.Post.model_validate(db_post)
 
 @router.get("/{post_id}")
-async def read_merchant(
+async def read_post(
     post_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
 ) -> models.Post:
@@ -58,7 +58,7 @@ async def read_merchant(
     if db_post:
         return models.Post.model_validate(db_post)
     
-    raise HTTPException(status_code=404, detail="Merchant not found")
+    raise HTTPException(status_code=404, detail="Post not found")
 
 @router.put("/{post_id}")
 async def update_post(
