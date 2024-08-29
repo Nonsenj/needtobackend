@@ -9,6 +9,12 @@ from sqlalchemy.orm import sessionmaker
 
 
 from . import users
+from . import post
+
+
+from .users import *
+from .post import *
+
 from . import admins
 from . import messages
 from . import groupchats
