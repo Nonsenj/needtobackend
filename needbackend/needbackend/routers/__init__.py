@@ -7,6 +7,7 @@ from . import admins
 from . import messages
 from . import groupchats
 from . import individualchats
+from . import feeds
 
 
 def init_router(app):
