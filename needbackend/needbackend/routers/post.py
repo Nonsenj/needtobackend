@@ -10,7 +10,7 @@ import math
 from .. import models
 from .. import deps
 
-router = APIRouter(prefix="/post", tags=["posts"])
+router = APIRouter(prefix="/posts", tags=["posts"])
 
 SIZE_PER_PAGE = 50
 
@@ -33,7 +33,7 @@ async def read_items(
     )
 
     return models.PostList.model_validate(
-        dict(posts=posts, page_count=page_count, page=page, size_per_page=SIZE_PER_PAGE)
+        dict(posts=posts, page_size=page_count, page=page, size_per_page=SIZE_PER_PAGE)
     )
 
 @router.post("/noauth")
@@ -80,6 +80,7 @@ async def update_post(
 ) -> models.Post:
     data = post.model_dump()
     db_post = await session.get(models.DBPost, post_id)
+    db_post.sqlmodel_update(data)
     session.add(db_post)
     await session.commit()
     await session.refresh(db_post)

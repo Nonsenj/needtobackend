@@ -15,15 +15,17 @@ from . import messages
 from . import groupchats
 from . import individualchats
 from . import feeds
+from . import blog
 
 
 from .post import *
 from .users import *
 from .admins import *
-from .messages import *
-from .groupchats import *
+# from .messages import *
+# from .groupchats import *
 from .individualchats import *
 from .feeds import *
+from .blog import *
 
 connect_args = {}
 

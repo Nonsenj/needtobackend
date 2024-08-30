@@ -16,10 +16,10 @@ class Blog(BaseBlog):
     id: int
     time_stemp: datetime.datetime
 
-class CreateBaseBlog(BaseBlog):
+class CreateBlog(BaseBlog):
     pass
 
-class UpdataBaseBlog(BaseBlog):
+class UpdataBlog(BaseBlog):
     pass
 
 class DBBlog(BaseBlog, SQLModel, table=True):
@@ -28,8 +28,9 @@ class DBBlog(BaseBlog, SQLModel, table=True):
     time_stemp: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 
-class PostList(BaseModel):
-    posts: list[Blog]
+class BlogList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    blogs: list[Blog]
     page: int
     page_size: int
     size_per_page: int
