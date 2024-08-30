@@ -10,22 +10,20 @@ from sqlalchemy.orm import sessionmaker
 
 from . import users
 from . import post
-
-
-from .users import *
-from .post import *
-
 from . import admins
 from . import messages
 from . import groupchats
 from . import individualchats
+from . import feeds
 
 
+from .post import *
 from .users import *
 from .admins import *
 from .messages import *
 from .groupchats import *
 from .individualchats import *
+from .feeds import *
 
 connect_args = {}
 

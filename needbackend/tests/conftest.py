@@ -114,128 +114,55 @@ async def oauth_token_user1(user1: models.DBUser) -> dict:
         user_id=user.id,
     )
 
-
-@pytest_asyncio.fixture(name="merchant_user1")
-async def example_merchant_user1(
-    session: models.AsyncSession, user1: models.DBUser
-) -> models.DBMerchant:
-    name = "merchant1"
+@pytest_asyncio.fixture(name="admin1")
+async def example_admin1(session: models.AsyncSession) -> models.DBUser:
+    password = "123456"
+    username = "admin1"
 
     query = await session.exec(
-        models.select(models.DBMerchant)
-        .where(models.DBMerchant.name == name, models.DBMerchant.user_id == user1.id)
-        .limit(1)
+        models.select(models.DBUser).where(models.DBUser.username == username).limit(1)
     )
-    merchant = query.one_or_none()
-    if merchant:
-        return merchant
+    admin = query.one_or_none()
+    if admin:
+        return admin
 
-    merchant = models.DBMerchant(
-        name=name, user=user1, decription="Merchant Description", tax_id="0000000000000"
+    admin = models.DBUser(
+        username=username,
+        password=password,
+        email="admin1@example.com",
+        first_name="Admin",
+        last_name="User",
+        last_login_date=datetime.datetime.now(tz=datetime.timezone.utc),
+        role=models.UserRole.admin,
     )
 
-    session.add(merchant)
+    await admin.set_password(password)
+    session.add(admin)
     await session.commit()
-    await session.refresh(merchant)
-    return merchant
+    await session.refresh(admin)
+    return admin
 
-@pytest_asyncio.fixture(name="wallet_user1")
-async def fixture_wallet_user1(
-    session: models.AsyncSession, user1: models.DBUser
-) -> models.DBWallet:
-    # Define a unique balance and user ID for the wallet
-    balance = 1000.0
 
-    # Query to check if the wallet already exists for the user
-    query = await session.exec(
-        models.select(models.DBWallet)
-        .where(models.DBWallet.user_id == user1.id)
-        .limit(1)
+@pytest_asyncio.fixture(name="token_admin1")
+async def oauth_token_admin1(admin1: models.DBUser) -> dict:
+    settings = SettingsTesting()
+    access_token_expires = datetime.timedelta(
+        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    wallet = query.one_or_none()
-    
-    # If wallet exists, return it
-    if wallet:
-        return wallet
-
-    # If not, create a new wallet
-    wallet = models.DBWallet(
-        balance=balance, user=user1
+    admin = admin1
+    return models.Token(
+        access_token=security.create_access_token(
+            data={"sub": admin.id},
+            expires_delta=access_token_expires,
+        ),
+        refresh_token=security.create_refresh_token(
+            data={"sub": admin.id},
+            expires_delta=access_token_expires,
+        ),
+        token_type="Bearer",
+        scope="",
+        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+        expires_at=datetime.datetime.now() + access_token_expires,
+        issued_at=admin.last_login_date,
+        user_id=admin.id,
     )
-
-
-    session.add(wallet)
-    await session.commit()
-    await session.refresh(wallet)
-    return wallet
-
-
-@pytest_asyncio.fixture(name="item_user1")
-async def example_item_user1(
-    session: models.AsyncSession, merchant1: models.DBMerchant, user1: models.DBUser
-) -> models.DBItem:
-    name = "item1"
-
-    query = await session.exec(
-        models.select(models.DBItem)
-        .where(models.DBItem.name == name, models.DBItem.merchant_id == merchant1.id)
-        .limit(1)
-    )
-    item = query.one_or_none()
-    if item:
-        return item
-
-    item = models.DBItem(
-        name=name,
-        description="Item description",
-        price=10.0,
-        merchant_id=merchant1.id,
-        user_id=user1.id
-    )
-
-    session.add(item)
-    await session.commit()
-    await session.refresh(item)
-    return item
-
-@pytest_asyncio.fixture(name="merchant1")
-async def example_merchant1(
-    session: models.AsyncSession, user1: models.DBUser
-) -> models.DBMerchant:
-    name = "merchant1"
-    
-    query = await session.exec(
-        models.select(models.DBMerchant)
-        .where(models.DBMerchant.name == name, models.DBMerchant.user_id == user1.id)
-        .limit(1)
-    )
-    merchant = query.one_or_none()
-    
-    if merchant:
-        return merchant
-
-    merchant = models.DBMerchant(
-        name=name, 
-        description="Merchant Description", 
-        tax_id="0000000000000",
-        user_id=user1.id
-    )
-    
-    session.add(merchant)
-    await session.commit()
-    await session.refresh(merchant)
-    return merchant
-
-@pytest_asyncio.fixture(name="transaction")
-async def example_transaction(session: models.AsyncSession, token_user1: models.Token, item_user1: models.DBItem, merchant_user1: models.DBMerchant) -> models.DBTransaction:
-    transaction = models.DBTransaction(
-        user_id=token_user1.user_id,
-        item_id=item_user1.id,
-        merchant_id=merchant_user1.id,  # Provide a valid merchant_id
-    )
-
-    session.add(transaction)
-    await session.commit()
-    await session.refresh(transaction)
-    return transaction
-

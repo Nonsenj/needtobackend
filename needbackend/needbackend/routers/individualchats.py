@@ -8,6 +8,35 @@ from ..models import DBIndividualChat, IndividualChat, CreatedIndividualChat, In
 
 router = APIRouter(prefix="/individualchats", tags=["individualchats"])
 
+
+@router.post("/noauth", response_model=IndividualChat)
+async def create_anonymous_individual_chat(
+    user2_id: int,
+    session: Annotated[AsyncSession, Depends(get_session)]
+) -> IndividualChat:
+
+    existing_chat_query = select(DBIndividualChat).where(
+        ((DBIndividualChat.user1_id == user2_id) & (DBIndividualChat.user2_id == None)) |
+        ((DBIndividualChat.user1_id == None) & (DBIndividualChat.user2_id == user2_id))
+    )
+    existing_chat = await session.exec(existing_chat_query)
+    if existing_chat.one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Individual chat already exists between these users.",
+        )
+
+    individual_chat = DBIndividualChat(
+        user1_id=None,  # or some default value
+        user2_id=user2_id
+    )
+    session.add(individual_chat)
+    await session.commit()
+    await session.refresh(individual_chat)
+
+    return individual_chat
+
+
 # Create a new individual chat
 @router.post("/", response_model=IndividualChat)
 async def create_individual_chat(

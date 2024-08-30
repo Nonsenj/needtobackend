@@ -107,3 +107,28 @@ class DBUser(BaseUser, SQLModel, table=True):
         return bcrypt.checkpw(
             plain_password.encode("utf-8"), self.password.encode("utf-8")
         )
+
+class UserProfile(BaseUser):
+    education_level: str
+    profile_picture: str
+    bio: str
+    phone_number: str
+    secondary_email: str
+    social_media_links: list[str]
+    interests: list[str]
+    activity_status: str
+    role: str
+
+    async def update_profile(self, updated_data):
+        for key, value in updated_data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+
+class CreatedUserProfile(UserProfile):
+    pass
+
+class UpdateUserProfile(UserProfile):
+    pass
+
+class DeleteUserProfile(UserProfile):
+    pass
