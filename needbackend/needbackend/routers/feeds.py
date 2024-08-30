@@ -8,7 +8,7 @@ from .. import models
 
 router = APIRouter(prefix="/feeds", tags=["feeds"])
 
-@router.post("/noauth", response_model=models.ReadFeed)
+@router.post("", response_model=models.ReadFeed)
 async def create_anonymous_feed(
     feed_info: models.CreatedFeed,
     session: Annotated[AsyncSession, Depends(models.get_session)]
@@ -27,7 +27,7 @@ async def create_anonymous_feed(
 
     return feed
 
-@router.post("/", response_model=models.ReadFeed)
+@router.post("", response_model=models.ReadFeed)
 async def create_feed(
     feed_info: models.CreatedFeed,
     session: Annotated[AsyncSession, Depends(models.get_session)],
@@ -106,32 +106,21 @@ async def delete_feed(
 
     return {"message": "Feed item deleted successfully"}
 
-@router.get("/", response_model=models.FeedList)
-async def list_feeds(
+@router.get("")
+async def read_feeds(
     session: Annotated[AsyncSession, Depends(models.get_session)],
-    current_user: models.User = Depends(deps.get_current_user),
     page: int = 1,
-    size_per_page: int = 10
 ) -> models.FeedList:
-
-    offset = (page - 1) * size_per_page
-
-    # Query to get the list of feeds for the current user with pagination
-    query = select(models.DBFeed).where(models.DBFeed.user_id == current_user.id).offset(offset).limit(size_per_page)
+    query = select(models.DBFeed).offset((page - 1)* SIZE_PER_PAGE).limit(SIZE_PER_PAGE)
     result = await session.exec(query)
     feeds = result.all()
 
-    # Query to get the total count of feeds for the current user
-    total_count_query = select([func.count(models.DBFeed.id)]).where(models.DBFeed.user_id == current_user.id)
-    total_count = await session.exec(total_count_query)
-    total_count = total_count.scalar_one()
+    total_feed_query = select(func.count(models.DBFeed.id))
+    total_result = await session.exec(total_item_query)
+    total_feeds = total_result.one()
 
-    # Calculate total number of pages
-    page_count = (total_count // size_per_page) + (1 if total_count % size_per_page > 0 else 0)
+    page_count = math.ceil(total_items / SIZE_PER_PAGE)
 
-    return models.FeedList(
-        feeds=feeds,
-        page=page,
-        page_count=page_count,
-        size_per_page=size_per_page
+    return models.FeedList.model_validate(
+        dict(feeds=feeds , page_size=0 , page=0, size_per_page=0)
     )
