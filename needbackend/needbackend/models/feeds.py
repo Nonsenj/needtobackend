@@ -28,8 +28,8 @@ class DBFeed(BaseFeed, SQLModel, table=True):
     __tablename__ = "feeds"
     id: Optional[int] = Field(default=None, primary_key=True)
     
-    user_id: int = Field(foreign_key="users.id")  # ID of the user who created or interacted with the feed item
-    user: Optional[users.DBUser] = Relationship()  # Relationship to the user who created the feed item
+    user_id: int = Field(foreign_key="users.id") 
+    user: Optional[users.DBUser] | None = Relationship()  # Relationship to the user who created the feed item
 
 # Pydantic model for a list of feed items (for pagination)
 class FeedList(BaseModel):
