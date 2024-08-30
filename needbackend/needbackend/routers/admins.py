@@ -31,7 +31,7 @@ async def get(
     return admin
 
 
-@router.post("/create")
+@router.post("")
 async def create(
     admin_info: models.RegisteredUser,
     session: Annotated[AsyncSession, Depends(models.get_session)],
