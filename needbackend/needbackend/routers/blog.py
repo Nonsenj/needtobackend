@@ -42,7 +42,7 @@ async def create_blog(
     blog: models.CreateBlog,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
     session: Annotated[AsyncSession, Depends(models.get_session)]
-) -> models.Post | None:
+) -> models.Blog | None:
     db_blog = models.DBBlog.model_validate(blog)
     session.add(db_blog)
     await session.commit()
@@ -53,20 +53,20 @@ async def create_blog(
 async def read_blog(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-) -> models.Post:
+) -> models.Blog:
     db_blog = await session.get(models.DBBlog, blog_id)
     if db_blog:
-        return models.Post.model_validate(db_blog)
+        return models.Blog.model_validate(db_blog)
     
     raise HTTPException(status_code=404, detail="Blog not found")
 
 @router.put("/{blog_id}")
-async def update_post(
+async def update_blog(
     blog_id: int,
     blog: models.UpdataBlog,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
     session:  Annotated[AsyncSession, Depends(models.get_session)], 
-) -> models.Post:
+) -> models.Blog:
     data = blog.model_dump()
     db_blog = await session.get(models.DBBlog, blog_id)
     db_blog.sqlmodel_update(data)
@@ -74,7 +74,7 @@ async def update_post(
     await session.commit()
     await session.refresh(db_blog)
 
-    return models.Post.model_validate(db_blog)
+    return models.Blog.model_validate(db_blog)
 
 @router.delete("/{blog_id}")
 async def delete_blog(
@@ -82,7 +82,7 @@ async def delete_blog(
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
     session:  Annotated[AsyncSession, Depends(models.get_session)], 
 ) -> dict:
-    db_blog = await session.get(models.DBPost, blog_id)
+    db_blog = await session.get(models.DBBlog, blog_id)
     await session.delete(db_blog)
     await session.commit()
 
