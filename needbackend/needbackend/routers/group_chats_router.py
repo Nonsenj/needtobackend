@@ -3,14 +3,15 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from typing import List, Annotated
 
-from .. import deps
-from ..models import DBGroupChat, GroupChatMember, get_session, CreatedGroupChat , GroupChat
+from ..deps import get_current_user
+from ..models import DBGroupChat, GroupChatMember, get_session, CreatedGroupChat , GroupChat , users
 
 router = APIRouter(prefix="/group_chats", tags=["group_chats"])
 
 @router.post("/", response_model=DBGroupChat)
 async def create_group_chat(
     group_chat: CreatedGroupChat,
+    current_user: Annotated[users, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> GroupChat | None :
     db_group_chat = DBGroupChat(**group_chat.dict())
@@ -33,6 +34,7 @@ async def get_group_chat(
 async def add_member_to_group_chat(
     group_chat_id: int,
     user_id: int,
+    current_user: Annotated[users, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> dict:
     group_chat = await session.get(DBGroupChat, group_chat_id)
@@ -54,6 +56,7 @@ async def list_group_chats(
 @router.delete("/{group_chat_id}")
 async def delete_group_chat(
     group_chat_id: int,
+    current_user: Annotated[users, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> dict:
     group_chat = await session.get(DBGroupChat, group_chat_id)
