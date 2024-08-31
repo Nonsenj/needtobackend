@@ -9,9 +9,24 @@ from sqlalchemy.orm import sessionmaker
 
 
 from . import users
+from . import post
+from . import admins
+from . import feeds
+from . import blog
+from . import messages
+from . import individual_chats
+from . import group_chats
 
-
+from .post import *
 from .users import *
+from .admins import *
+from .feeds import *
+from .blog import *
+from .messages import *
+from .individual_chats import *
+from .group_chats import *
+
+
 
 
 connect_args = {}

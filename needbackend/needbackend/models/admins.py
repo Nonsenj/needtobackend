@@ -1,7 +1,7 @@
 import datetime
 from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field
-
+import pydantic
 class BaseAdmin(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     email: str = pydantic.Field(json_schema_extra=dict(example="admin@email.local"))
