@@ -1,8 +1,8 @@
 import datetime
-
+from typing import Optional , List
 import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 
 # from passlib.context import CryptContext
 
@@ -88,6 +88,11 @@ class DBUser(BaseUser, SQLModel, table=True):
     register_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     updated_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     last_login_date: datetime.datetime | None = Field(default=None)
+
+    group_chats: List["GroupChatMember"] = Relationship(back_populates="user")
+    individual_chats_as_user1: List["DBIndividualChat"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user1_id]"})
+    individual_chats_as_user2: List["DBIndividualChat"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user2_id]"})
+    messages: List["DBMessage"] = Relationship(back_populates="sender")
 
     async def has_roles(self, roles):
         for role in roles:
