@@ -23,6 +23,9 @@ class DeletedConverastion(BaseConversation) :
 
 class Conversation(BaseConversation) :
     id : int
+    conversation_id : int
+    user_id : int
+    user2_id : int
 
 class DBConversation(BaseConversation, SQLModel, Table=True) :
     __tablename__ = "conversations"
