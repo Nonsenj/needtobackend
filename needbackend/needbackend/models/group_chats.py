@@ -5,7 +5,6 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field, Relationship
 
 class BaseGroupChat(BaseModel):
-    user1_id: int | None
     group_chat_id: int | None
 
 class CreatedGroupChat(BaseGroupChat):
