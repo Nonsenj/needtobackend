@@ -30,5 +30,5 @@ class DBConversation(BaseConversation, SQLModel, Table=True) :
     user_id : int = Field(foreign_key="users.id")
     user2_id : int = Field(foreign_key="users.id")
     users: users.DBUser | None = Relationship()
-    messages: messages.DBMessage | None = Relationship() 
+    messages: "DBMessage" | None = Relationship()
 
