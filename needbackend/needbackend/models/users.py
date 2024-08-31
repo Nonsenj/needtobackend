@@ -137,3 +137,4 @@ class UpdateUserProfile(UserProfile):
 
 class DeleteUserProfile(UserProfile):
     pass
+

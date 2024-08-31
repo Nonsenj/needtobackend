@@ -35,3 +35,13 @@ class GroupChatMember(SQLModel, table=True):
 
     user: Optional["DBUser"] = Relationship(back_populates="group_chats")
     group_chat: Optional[DBGroupChat] = Relationship(back_populates="members")
+
+class GroupChatList(BaseModel):
+    group_chats: List[GroupChat]
+
+class GroupChatMemberList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    members: List[GroupChatMember]
+    page: int
+    page_count: int
+    size_per_page: int

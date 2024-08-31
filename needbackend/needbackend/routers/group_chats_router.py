@@ -13,10 +13,11 @@ async def create_group_chat(
     group_chat: CreatedGroupChat,
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> GroupChat | None :
-    session.add(group_chat)
+    db_group_chat = DBGroupChat(**group_chat.dict())
+    session.add(db_group_chat)
     await session.commit()
-    await session.refresh(group_chat)
-    return group_chat
+    await session.refresh(db_group_chat)
+    return db_group_chat
 
 @router.get("/{group_chat_id}", response_model=DBGroupChat)
 async def get_group_chat(
@@ -59,6 +60,7 @@ async def delete_group_chat(
     if not group_chat:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group chat not found")
     
+    await session.exec(select(DBGroupChatMember).where(DBGroupChatMember.group_chat_id == group_chat_id))
     await session.delete(group_chat)
     await session.commit()
     return {"message": "Group chat deleted successfully"}

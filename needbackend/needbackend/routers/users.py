@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 
-from typing import Annotated
+from typing import Annotated , List
 
 from .. import deps
 from .. import models
@@ -111,3 +111,11 @@ async def update(
     await session.refresh(db_user)
 
     return db_user
+
+@router.get("/", response_model=List[models.DBUser])
+async def list_group_chats(
+    session: Annotated[AsyncSession, Depends(models.get_session)]
+) -> List[models.DBUser]:
+    user_list = await session.exec(select(models.DBUser))
+    return user_list.all()
+    

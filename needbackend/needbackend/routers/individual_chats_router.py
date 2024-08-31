@@ -8,15 +8,16 @@ from ..models import DBIndividualChat, get_session , CreatedIndividualChat , Ind
 
 router = APIRouter(prefix="/individual_chats", tags=["individual_chats"])
 
-@router.post("/", response_model=DBIndividualChat)
+@router.post("/", response_model=IndividualChat)
 async def create_individual_chat(
-    chat: CreatedIndividualChat,
-    session: Annotated[AsyncSession, Depends(get_session)]
+    individual_chat: CreatedIndividualChat,
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> IndividualChat | None:
-    session.add(chat)
+    db_individual_chat = DBIndividualChat(**individual_chat.dict())  # Create an instance of DBIndividualChat
+    session.add(db_individual_chat)
     await session.commit()
-    await session.refresh(chat)
-    return chat
+    await session.refresh(db_individual_chat)
+    return db_individual_chat
 
 @router.get("/{chat_id}", response_model=DBIndividualChat)
 async def get_individual_chat(

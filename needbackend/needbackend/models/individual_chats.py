@@ -27,3 +27,10 @@ class DBIndividualChat(BaseIndividualChat,SQLModel, table=True):
     user1: Optional["DBUser"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user1_id]"})
     user2: Optional["DBUser"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user2_id]"})
     messages: List["DBMessage"] = Relationship(back_populates="chat")
+
+class IndividualChatList(BaseIndividualChat):
+    model_config = ConfigDict(from_attributes=True)
+    IndividualChat: List[IndividualChat]
+    page: int
+    page_count: int
+    size_per_page: int

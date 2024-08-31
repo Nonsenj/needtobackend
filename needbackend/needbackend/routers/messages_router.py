@@ -4,19 +4,31 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBMessage, get_session , CreatedMessage , Message
+from ..models import DBMessage, get_session , CreatedMessageIndiChat , Message , CreatedMessageGroupChat
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
-@router.post("/", response_model=DBMessage)
-async def create_message(
-    message: CreatedMessage,
+@router.post("/group_message", response_model=DBMessage)
+async def create_message_group_chat(
+    message: CreatedMessageGroupChat,
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> Message | None:
-    session.add(message)
+    db_message = DBMessage(**message.dict())
+    session.add(db_message)
     await session.commit()
-    await session.refresh(message)
-    return message
+    await session.refresh(db_message)
+    return DBMessage.model_validate(db_message)
+
+@router.post("/individual_message", response_model=DBMessage)
+async def create_message_individual_chat(
+    message: CreatedMessageIndiChat,
+    session: Annotated[AsyncSession, Depends(get_session)]
+) -> Message | None:
+    db_message = DBMessage(**message.dict())
+    session.add(db_message)
+    await session.commit()
+    await session.refresh(db_message)
+    return DBMessage.model_validate(db_message)
 
 @router.get("/{message_id}", response_model=DBMessage)
 async def get_message(
