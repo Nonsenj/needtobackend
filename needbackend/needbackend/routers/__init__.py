@@ -7,7 +7,8 @@ from . import admins
 from . import messages_router
 from . import feeds
 from . import blog
-
+from . import group_chats_router
+from . import individual_chats_router
 
 def init_router(app):
     app.include_router(root.router)
@@ -16,6 +17,8 @@ def init_router(app):
     app.include_router(post.router)
     app.include_router(admins.router)
     app.include_router(messages_router.router)
+    app.include_router(individual_chats_router.router)
+    app.include_router(group_chats_router.router)
     app.include_router(feeds.router)
     app.include_router(blog.router)
 
