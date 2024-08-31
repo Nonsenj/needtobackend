@@ -4,15 +4,15 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBGroupChat, GroupChatMember, get_session
+from ..models import DBGroupChat, GroupChatMember, get_session, CreatedGroupChat , GroupChat
 
 router = APIRouter(prefix="/group_chats", tags=["group_chats"])
 
 @router.post("/", response_model=DBGroupChat)
 async def create_group_chat(
-    group_chat: DBGroupChat,
+    group_chat: CreatedGroupChat,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBGroupChat:
+) -> GroupChat | None :
     session.add(group_chat)
     await session.commit()
     await session.refresh(group_chat)
@@ -22,7 +22,7 @@ async def create_group_chat(
 async def get_group_chat(
     group_chat_id: int,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBGroupChat:
+) -> GroupChat:
     group_chat = await session.get(DBGroupChat, group_chat_id)
     if not group_chat:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group chat not found")

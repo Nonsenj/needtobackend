@@ -14,6 +14,9 @@ class CreatedIndividualChat(BaseIndividualChat):
 class DeletedIndividualChat(BaseIndividualChat):
     pass
 
+class IndividualChat(BaseIndividualChat):
+    id : int
+
 class DBIndividualChat(BaseIndividualChat,SQLModel, table=True):
     __tablename__ = "individual_chats"
     id: Optional[int] = Field(default=None, primary_key=True)

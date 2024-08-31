@@ -4,15 +4,15 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBMessage, get_session
+from ..models import DBMessage, get_session , CreatedMessage , Message
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
 @router.post("/", response_model=DBMessage)
 async def create_message(
-    message: DBMessage,
+    message: CreatedMessage,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBMessage:
+) -> Message | None:
     session.add(message)
     await session.commit()
     await session.refresh(message)
@@ -22,7 +22,7 @@ async def create_message(
 async def get_message(
     message_id: int,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBMessage:
+) -> Message:
     message = await session.get(DBMessage, message_id)
     if not message:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")

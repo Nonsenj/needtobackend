@@ -4,15 +4,15 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBIndividualChat, get_session
+from ..models import DBIndividualChat, get_session , CreatedIndividualChat , IndividualChat
 
 router = APIRouter(prefix="/individual_chats", tags=["individual_chats"])
 
 @router.post("/", response_model=DBIndividualChat)
 async def create_individual_chat(
-    chat: DBIndividualChat,
+    chat: CreatedIndividualChat,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBIndividualChat:
+) -> IndividualChat | None:
     session.add(chat)
     await session.commit()
     await session.refresh(chat)
@@ -22,7 +22,7 @@ async def create_individual_chat(
 async def get_individual_chat(
     chat_id: int,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBIndividualChat:
+) -> IndividualChat:
     chat = await session.get(DBIndividualChat, chat_id)
     if not chat:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Individual chat not found")

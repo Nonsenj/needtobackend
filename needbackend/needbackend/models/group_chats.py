@@ -5,13 +5,17 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field, Relationship
 
 class BaseGroupChat(BaseModel):
-    group_chat_id: int | None
+    name : str
+    description: Optional[str] = None
 
 class CreatedGroupChat(BaseGroupChat):
     pass
 
 class DeletedGroupChat(BaseGroupChat):
     pass
+
+class GroupChat(BaseGroupChat):
+    id: int
 
 class DBGroupChat(BaseGroupChat,SQLModel, table=True):
     __tablename__ = "group_chats"
