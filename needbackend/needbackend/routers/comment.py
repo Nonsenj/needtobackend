@@ -53,7 +53,7 @@ async def read_comment_blog(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
 ) -> models.CommentOfBlog:
-    db_comment = await session.get(models.DBBlog, blog_id)
+    db_comment = await session.get(models.DBCommentBlog, blog_id)
     if db_comment:
         return models.CommentOfBlog.model_validate(db_comment)
     
