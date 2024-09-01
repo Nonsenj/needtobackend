@@ -38,3 +38,21 @@ class DBCommentBlog(BlogComment, SQLModel, table=True):
     user: users.DBUser | None = Relationship()
     blog_id: int = Field(default=None, foreign_key="blogs.id")
     blog: blogs.DBBlog | None = Relationship()
+
+class CommentOfPost(PostComment):
+    id: int 
+
+class CommentOfBlog(BlogComment):
+    id: int 
+
+class CreateCommentPost(PostComment):
+    pass
+
+class CreateCommentBlog(BlogComment):
+    pass
+
+class UpdateCommentPost(PostComment):
+    pass
+
+class UpdateCommentBlog(BlogComment):
+    pass

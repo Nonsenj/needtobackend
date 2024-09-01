@@ -69,41 +69,41 @@ async def create_blog(
 #     return models.Blog.model_validate(test_blog)
     
 
-# @router.get("/{blog_id}")
-# async def read_blog(
-#     blog_id: int,
-#     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-# ) -> models.Blog:
-#     db_blog = await session.get(models.DBBlog, blog_id)
-#     if db_blog:
-#         return models.Blog.model_validate(db_blog)
-    
-#     raise HTTPException(status_code=404, detail="Blog not found")
-
 @router.get("/{blog_id}")
 async def read_blog(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
 ) -> models.Blog:
-    statement = select(models.DBBlog).where(models.DBBlog.id == blog_id)
-    result = await session.exec(statement)
-    db_blog = result.first()
-
+    db_blog = await session.get(models.DBBlog, blog_id)
     if db_blog:
-        db_blog_with_tag = models.Blog(
-            id=db_blog.id,
-            title=db_blog.title,
-            author=db_blog.author,
-            content=db_blog.content,
-            subtitle=db_blog.subtitle,
-            completed=db_blog.completed,
-            created_at=db_blog.created_at,
-            tags= [models.DBTag(id=tag.id, name=tag.name) for tag in db_blog.list_tag]
-            
-        )
-        return db_blog_with_tag
+        return models.Blog.model_validate(db_blog)
     
     raise HTTPException(status_code=404, detail="Blog not found")
+
+# @router.get("/{blog_id}")
+# async def read_blog(
+#     blog_id: int,
+#     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
+# ) -> models.Blog:
+#     statement = select(models.DBBlog).where(models.DBBlog.id == blog_id)
+#     result = await session.exec(statement)
+#     db_blog = result.first()
+
+#     if db_blog:
+#         db_blog_with_tag = models.Blog(
+#             id=db_blog.id,
+#             title=db_blog.title,
+#             author=db_blog.author,
+#             content=db_blog.content,
+#             subtitle=db_blog.subtitle,
+#             completed=db_blog.completed,
+#             created_at=db_blog.created_at,
+#             tags= [models.DBTag(id=tag.id, name=tag.name) for tag in db_blog.list_tag]
+            
+#         )
+#         return db_blog_with_tag
+    
+#     raise HTTPException(status_code=404, detail="Blog not found")
 
 @router.put("/{blog_id}")
 async def update_blog(
