@@ -48,34 +48,10 @@ async def get_message_chat(
     return MessageChat.model_validate(db_message_chat)
 
 
-@router.get("/", response_model=MessageChatList)
+@router.get("/", response_model=List[DBMessageChat])
 async def list_message_chats(
     session: Annotated[AsyncSession, Depends(get_session)],
-    individual_chat_id: int,
-    page: int = 1,
-    size_per_page: int = 10,
     current_user=Depends(get_current_user)
-) -> MessageChatList:
-    
-    offset = (page - 1) * size_per_page
-    
-    
-    query = select(DBMessageChat).where(DBMessageChat.individual_chat_id == individual_chat_id).offset(offset).limit(size_per_page)
-    result = await session.exec(query)
-    messages = result.all()
-
-   
-    total_count_query = select([func.count(DBMessageChat.id)]).where(DBMessageChat.individual_chat_id == individual_chat_id)
-    total_count_result = await session.exec(total_count_query)
-    total_count = total_count_result.scalar_one()
-
-    
-    page_count = (total_count // size_per_page) + (1 if total_count % size_per_page > 0 else 0)
-
-
-    return MessageChatList(
-        messages=[MessageChat.from_orm(msg) for msg in messages],
-        page=page,
-        page_count=page_count,
-        size_per_page=size_per_page
-    )
+) -> List[DBMessageChat]:
+    chat_list = await session.exec(select(DBMessageChat))
+    return chat_list.all()

@@ -48,34 +48,10 @@ async def get_message_group(
     return MessageGroup.model_validate(db_message_group)
 
 
-@router.get("/", response_model=MessageGroupList)
-async def list_message_groups(
+@router.get("/", response_model=List[DBMessageGroup])
+async def list_message_grop(
     session: Annotated[AsyncSession, Depends(get_session)],
-    group_chat_id: int,
-    page: int = 1,
-    size_per_page: int = 10,
     current_user=Depends(get_current_user)
-) -> MessageGroupList:
-    
-    offset = (page - 1) * size_per_page
-    
-    
-    query = select(DBMessageGroup).where(DBMessageGroup.group_chat_id == group_chat_id).offset(offset).limit(size_per_page)
-    result = await session.exec(query)
-    messages = result.all()
-
-    
-    total_count_query = select([func.count(DBMessageGroup.id)]).where(DBMessageGroup.group_chat_id == group_chat_id)
-    total_count_result = await session.exec(total_count_query)
-    total_count = total_count_result.scalar_one()
-
-    
-    page_count = (total_count // size_per_page) + (1 if total_count % size_per_page > 0 else 0)
-
-    
-    return MessageGroupList(
-        messages=[MessageGroup.from_orm(msg) for msg in messages],
-        page=page,
-        page_count=page_count,
-        size_per_page=size_per_page
-    )
+) -> List[DBMessageGroup]:
+    Group_list = await session.exec(select(DBMessageGroup))
+    return Group_list.all()
