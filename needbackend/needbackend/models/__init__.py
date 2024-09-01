@@ -12,7 +12,6 @@ from . import users
 from . import posts
 from . import admins
 from . import feeds
-# from . import blog
 from . import messages_chat
 from . import messages_group
 from . import individual_chats
@@ -23,7 +22,6 @@ from .posts import *
 from .users import *
 from .admins import *
 from .feeds import *
-# from .blog import *
 from .messages_chat import *
 from .messages_group import *
 from .individual_chats import *
