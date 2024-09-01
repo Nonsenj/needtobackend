@@ -4,33 +4,34 @@ import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field, Relationship
 
-class BaseBlog(BaseModel):
+class BasePost(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    title: str
-    subtitle: str | None = None
     content: str | None = None
     author: str
     completed: bool | None = False
 
-class Blog(BaseBlog):
+    #category: str
+    likes: int | None = 0
+    #dislikes: int | None = 0
+
+class Post(BasePost):
     id: int
     time_stemp: datetime.datetime
 
-class CreateBlog(BaseBlog):
+class CreatePost(BasePost):
     pass
 
-class UpdataBlog(BaseBlog):
+class UpdataPost(BasePost):
     pass
 
-class DBBlog(BaseBlog, SQLModel, table=True):
-    __tablename__ = "blog"
+class DBPost(BasePost, SQLModel, table=True):
+    __tablename__ = "posts"
     id: Optional[int] = Field(default=None, primary_key=True)
     time_stemp: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 
-class BlogList(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    blogs: list[Blog]
+class PostList(BaseModel):
+    posts: list[Post]
     page: int
     page_size: int
     size_per_page: int
