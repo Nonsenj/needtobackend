@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     yield
     if models.engine is not None:
         # Close the DB connection
-        await models.sesion_close()
+        await models.close_session()
 
 
 def create_app(settings=None):

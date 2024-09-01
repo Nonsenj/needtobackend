@@ -14,6 +14,9 @@ class CreatedIndividualChat(BaseIndividualChat):
 class DeletedIndividualChat(BaseIndividualChat):
     pass
 
+class IndividualChat(BaseIndividualChat):
+    id : int
+
 class DBIndividualChat(BaseIndividualChat,SQLModel, table=True):
     __tablename__ = "individual_chats"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -24,3 +27,10 @@ class DBIndividualChat(BaseIndividualChat,SQLModel, table=True):
     user1: Optional["DBUser"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user1_id]"})
     user2: Optional["DBUser"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user2_id]"})
     messages: List["DBMessage"] = Relationship(back_populates="chat")
+
+class IndividualChatList(BaseIndividualChat):
+    model_config = ConfigDict(from_attributes=True)
+    IndividualChat: List[IndividualChat]
+    page: int
+    page_count: int
+    size_per_page: int
