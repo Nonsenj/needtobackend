@@ -79,7 +79,7 @@ async def test_list_post(client: AsyncClient, post_user1: models.DBPost,):
     assert check_post["create_at"] == post_user1.create_at.isoformat()
 
 @pytest.mark.asyncio
-async def test_id_post(client: AsyncClient, post_user1: models.DBPost,):
+async def test_get_post_by_id(client: AsyncClient, post_user1: models.DBPost,):
     response = await client.get(f"/posts/{post_user1.id}")
 
     data = response.json()

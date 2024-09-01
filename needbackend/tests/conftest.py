@@ -171,7 +171,7 @@ async def oauth_token_admin1(admin1: models.DBUser) -> dict:
 async def example_post_user1(
     session: models.AsyncSession, user1: models.DBUser
 ) -> models.DBPost:
-    content = "test content"
+    content = "Test content"
 
     query = await session.exec(
         models.select(models.DBPost)
@@ -191,4 +191,29 @@ async def example_post_user1(
     await session.commit()
     await session.refresh(post)
     return post
+
+@pytest_asyncio.fixture(name="blog_user1")
+async def example_blog_user1(
+    session: models.AsyncSession, user1: models.DBUser
+) -> models.DBBlog:
+    title = "Test Blog Title"
+
+    query = await session.exec(
+        models.select(models.DBBlog)
+        .where(models.DBBlog.title == title, models.DBBlog.user_id == user1.id)
+        .limit(1)
+    )
+
+    blog = query.one_or_none()
+    if blog:
+        return blog
+    
+    blog = models.DBBlog(
+        title=title, content="Test blog content", user_id=user1.id, completed=True
+    )
+
+    session.add(blog)
+    await session.commit()
+    await session.refresh(blog)
+    return blog
 
