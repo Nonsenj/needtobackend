@@ -13,7 +13,8 @@ from . import post
 from . import admins
 from . import feeds
 from . import blog
-from . import messages
+from . import messages_chat
+from . import messages_group
 from . import individual_chats
 from . import group_chats
 
@@ -22,9 +23,11 @@ from .users import *
 from .admins import *
 from .feeds import *
 from .blog import *
-from .messages import *
+from .messages_chat import *
+from .messages_group import *
 from .individual_chats import *
 from .group_chats import *
+
 
 
 

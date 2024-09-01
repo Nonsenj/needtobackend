@@ -92,7 +92,8 @@ class DBUser(BaseUser, SQLModel, table=True):
     group_chats: List["GroupChatMember"] = Relationship(back_populates="user")
     individual_chats_as_user1: List["DBIndividualChat"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user1_id]"})
     individual_chats_as_user2: List["DBIndividualChat"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user2_id]"})
-    messages: List["DBMessage"] = Relationship(back_populates="sender")
+    messages_chat: List["DBMessageChat"] = Relationship(back_populates="sender")
+    messages_group: List["DBMessageGroup"] = Relationship(back_populates="sender")
 
     async def has_roles(self, roles):
         for role in roles:
