@@ -13,7 +13,7 @@ from .. import deps
 
 router = APIRouter(prefix="/comments", tags=["comments"])
 
-@router.post("post")
+@router.post("/post")
 async def create_comment_post(
     post: models.CreateCommentPost,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
@@ -25,7 +25,7 @@ async def create_comment_post(
     await session.refresh(db_comment)
     return  models.CommentOfPost.model_validate(db_comment)
 
-@router.post("blog")
+@router.post("/blog")
 async def create_comment_blog(
     blog: models.CreateCommentBlog,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
@@ -37,18 +37,18 @@ async def create_comment_blog(
     await session.refresh(db_comment)
     return  models.CommentOfBlog.model_validate(db_comment)
 
-@router.get("post/{post_id}")
+@router.get("/post/{post_id}")
 async def read_comment_blog(
     post_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
 ) -> models.CommentOfPost:
-    db_comment = await session.get(models.DBBlog, post_id)
+    db_comment = await session.get(models.DBCommentPost, post_id)
     if db_comment:
         return models.CommentOfPost.model_validate(db_comment)
     
     raise HTTPException(status_code=404, detail="Comment not found")
 
-@router.get("blog/{blog_id}")
+@router.get("/blog/{blog_id}")
 async def read_comment_blog(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
@@ -59,7 +59,7 @@ async def read_comment_blog(
     
     raise HTTPException(status_code=404, detail="Comment not found")
 
-@router.put("post/{post_id}")
+@router.put("/post/{post_id}")
 async def update_comment_post(
     post_id: int,
     comment: models.UpdateCommentPost,
@@ -75,7 +75,7 @@ async def update_comment_post(
 
     return models.CommentOfPost.model_validate(db_comment)
 
-@router.put("blog/{blog_id}")
+@router.put("/blog/{blog_id}")
 async def update_comment_blog(
     blog_id: int,
     comment: models.UpdateCommentBlog,
@@ -91,7 +91,7 @@ async def update_comment_blog(
 
     return models.CommentOfBlog.model_validate(db_comment)
 
-@router.delete("post/{post_id}")
+@router.delete("/post/{post_id}")
 async def delete_comment_post(
     post_id: int,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
@@ -103,7 +103,7 @@ async def delete_comment_post(
 
     return dict(message="delete success")
 
-@router.delete("blog/{blog_id}")
+@router.delete("/blog/{blog_id}")
 async def delete_comment_blog(
     blog_id: int,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],

@@ -217,3 +217,27 @@ async def example_blog_user1(
     await session.refresh(blog)
     return blog
 
+@pytest_asyncio.fixture(name="comment_post_user1")
+async def example_comment_post_user1(
+    session: models.AsyncSession, user1: models.DBUser, post_user1: models.DBPost
+) -> models.DBCommentPost:
+    content = "Test comment on post"
+
+    query = await session.exec(
+        models.select(models.DBCommentPost)
+        .where(models.DBCommentPost.content == content, models.DBCommentPost.post_id == post_user1.id)
+        .limit(1)
+    )
+
+    comment = query.one_or_none()
+    if comment:
+        return comment
+
+    comment = models.DBCommentPost(
+        content=content, user_id=user1.id, post_id=post_user1.id, like=0
+    )
+
+    session.add(comment)
+    await session.commit()
+    await session.refresh(comment)
+    return comment
