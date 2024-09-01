@@ -5,13 +5,17 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field, Relationship
 
 class BaseGroupChat(BaseModel):
-    group_chat_id: int | None
+    name : str
+    description: Optional[str] = None
 
 class CreatedGroupChat(BaseGroupChat):
     pass
 
 class DeletedGroupChat(BaseGroupChat):
     pass
+
+class GroupChat(BaseGroupChat):
+    id: int
 
 class DBGroupChat(BaseGroupChat,SQLModel, table=True):
     __tablename__ = "group_chats"
@@ -31,3 +35,13 @@ class GroupChatMember(SQLModel, table=True):
 
     user: Optional["DBUser"] = Relationship(back_populates="group_chats")
     group_chat: Optional[DBGroupChat] = Relationship(back_populates="members")
+
+class GroupChatList(BaseModel):
+    group_chats: List[GroupChat]
+
+class GroupChatMemberList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    members: List[GroupChatMember]
+    page: int
+    page_count: int
+    size_per_page: int

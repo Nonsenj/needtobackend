@@ -8,14 +8,12 @@ class BaseMessage(BaseModel) :
     model_config = ConfigDict(from_attributes=True)
     content: str 
     sender_id: int | None
-    group_chat_id: int | None
+
+class CreatedMessageIndiChat(BaseMessage) :
     individual_chat_id: int | None
 
-class CreatedMessage(BaseMessage) :
-    pass
-
-class DeletedMessage(BaseMessage) :
-    pass
+class CreatedMessageGroupChat(BaseMessage) :
+    group_chat_id: int | None
 
 class Message(BaseMessage) :
     id: int
@@ -25,7 +23,7 @@ class DBMessage(BaseMessage,SQLModel, table=True):
     __tablename__ = "messages"
     id: Optional[int] = Field(default=None, primary_key=True)
     content: str
-    timestamp: Optional[str] = None
+    timestamp: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     sender_id: int = Field(foreign_key="users.id")
     sender: Optional["DBUser"] = Relationship(back_populates="messages")
@@ -35,3 +33,10 @@ class DBMessage(BaseMessage,SQLModel, table=True):
 
     individual_chat_id: Optional[int] = Field(default=None, foreign_key="individual_chats.id")
     chat: Optional["DBIndividualChat"] = Relationship(back_populates="messages")
+
+class MessageList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    messages: list[Message]
+    page: int
+    page_count: int
+    size_per_page: int

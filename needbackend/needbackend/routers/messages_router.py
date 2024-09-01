@@ -4,25 +4,37 @@ from sqlmodel import select
 from typing import List, Annotated
 
 from .. import deps
-from ..models import DBMessage, get_session
+from ..models import DBMessage, get_session , CreatedMessageIndiChat , Message , CreatedMessageGroupChat
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
-@router.post("/", response_model=DBMessage)
-async def create_message(
-    message: DBMessage,
+@router.post("/group_message", response_model=DBMessage)
+async def create_message_group_chat(
+    message: CreatedMessageGroupChat,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBMessage:
-    session.add(message)
+) -> Message | None:
+    db_message = DBMessage(**message.dict())
+    session.add(db_message)
     await session.commit()
-    await session.refresh(message)
-    return message
+    await session.refresh(db_message)
+    return DBMessage.model_validate(db_message)
+
+@router.post("/individual_message", response_model=DBMessage)
+async def create_message_individual_chat(
+    message: CreatedMessageIndiChat,
+    session: Annotated[AsyncSession, Depends(get_session)]
+) -> Message | None:
+    db_message = DBMessage(**message.dict())
+    session.add(db_message)
+    await session.commit()
+    await session.refresh(db_message)
+    return DBMessage.model_validate(db_message)
 
 @router.get("/{message_id}", response_model=DBMessage)
 async def get_message(
     message_id: int,
     session: Annotated[AsyncSession, Depends(get_session)]
-) -> DBMessage:
+) -> Message:
     message = await session.get(DBMessage, message_id)
     if not message:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Message not found")
