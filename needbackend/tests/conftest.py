@@ -89,6 +89,32 @@ async def example_user1(session: models.AsyncSession) -> models.DBUser:
     await session.refresh(user)
     return user
 
+@pytest_asyncio.fixture(name="user2")
+async def example_user1(session: models.AsyncSession) -> models.DBUser:
+    password = "123456"
+    username = "user2"
+
+    query = await session.exec(
+        models.select(models.DBUser).where(models.DBUser.username == username).limit(1)
+    )
+    user = query.one_or_none()
+    if user:
+        return user
+
+    user = models.DBUser(
+        username=username,
+        password=password,
+        email="test@test.com",
+        first_name="Firstname",
+        last_name="lastname",
+        last_login_date=datetime.datetime.now(tz=datetime.timezone.utc),
+    )
+
+    await user.set_password(password)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
 
 @pytest_asyncio.fixture(name="token_user1")
 async def oauth_token_user1(user1: models.DBUser) -> dict:
@@ -114,55 +140,26 @@ async def oauth_token_user1(user1: models.DBUser) -> dict:
         user_id=user.id,
     )
 
-@pytest_asyncio.fixture(name="admin1")
-async def example_admin1(session: models.AsyncSession) -> models.DBUser:
-    password = "123456"
-    username = "admin1"
-
-    query = await session.exec(
-        models.select(models.DBUser).where(models.DBUser.username == username).limit(1)
-    )
-    admin = query.one_or_none()
-    if admin:
-        return admin
-
-    admin = models.DBUser(
-        username=username,
-        password=password,
-        email="admin1@example.com",
-        first_name="Admin",
-        last_name="User",
-        last_login_date=datetime.datetime.now(tz=datetime.timezone.utc),
-        role=models.UserRole.admin,
-    )
-
-    await admin.set_password(password)
-    session.add(admin)
-    await session.commit()
-    await session.refresh(admin)
-    return admin
-
-
-@pytest_asyncio.fixture(name="token_admin1")
-async def oauth_token_admin1(admin1: models.DBUser) -> dict:
+@pytest_asyncio.fixture(name="token_user2")
+async def oauth_token_user2(user2: models.DBUser) -> dict:
     settings = SettingsTesting()
     access_token_expires = datetime.timedelta(
         minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    admin = admin1
+    user = user2
     return models.Token(
         access_token=security.create_access_token(
-            data={"sub": admin.id},
+            data={"sub": user.id},
             expires_delta=access_token_expires,
         ),
         refresh_token=security.create_refresh_token(
-            data={"sub": admin.id},
+            data={"sub": user.id},
             expires_delta=access_token_expires,
         ),
         token_type="Bearer",
         scope="",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         expires_at=datetime.datetime.now() + access_token_expires,
-        issued_at=admin.last_login_date,
-        user_id=admin.id,
+        issued_at=user.last_login_date,
+        user_id=user.id,
     )
