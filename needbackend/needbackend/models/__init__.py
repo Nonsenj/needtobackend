@@ -14,6 +14,10 @@ from . import messages_chat
 from . import messages_group
 from . import individual_chats
 from . import group_chats
+from . import blogs
+from . import posts
+from . import comment
+from . import feeds
 
 from .users import *
 from .admins import *
@@ -21,6 +25,10 @@ from .messages_chat import *
 from .messages_group import *
 from .individual_chats import *
 from .group_chats import *
+from .blogs import *
+from .posts import *
+from .comment import *
+from .feeds import *
 
 
 
