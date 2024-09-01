@@ -17,13 +17,13 @@ class MessageChat(BaseMessageChat) :
     message_timestamp: datetime.datetime | None = pydantic.Field(json_schema_extra=dict(example="2023-01-01T00:00:00.000000"), default=None)
 
 class DBMessageChat(BaseMessageChat,SQLModel, table=True):
-    __tablename__ = "messages"
+    __tablename__ = "messages_chat"
     id: Optional[int] = Field(default=None, primary_key=True)
     content: str
     timestamp: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     sender_id: int = Field(foreign_key="users.id")
-    sender: Optional["DBUser"] = Relationship(back_populates="messages")
+    sender: Optional["DBUser"] = Relationship(back_populates="messages_chat")
 
     individual_chat_id: Optional[int] = Field(default=None, foreign_key="individual_chats.id")
     chat: Optional["DBIndividualChat"] = Relationship(back_populates="messages")

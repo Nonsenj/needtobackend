@@ -23,6 +23,7 @@ async def create_group_chat(
 @router.get("/{group_chat_id}", response_model=DBGroupChat)
 async def get_group_chat(
     group_chat_id: int,
+    current_user: Annotated[users, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> GroupChat:
     group_chat = await session.get(DBGroupChat, group_chat_id)

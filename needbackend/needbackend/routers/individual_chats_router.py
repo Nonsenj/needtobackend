@@ -23,6 +23,7 @@ async def create_individual_chat(
 @router.get("/{chat_id}", response_model=DBIndividualChat)
 async def get_individual_chat(
     chat_id: int,
+    current_user: Annotated[users, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)]
 ) -> IndividualChat:
     chat = await session.get(DBIndividualChat, chat_id)

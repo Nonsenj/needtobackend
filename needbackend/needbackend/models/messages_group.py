@@ -23,7 +23,7 @@ class DBMessageGroup(BaseMessageGroup,SQLModel, table=True):
     timestamp: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     sender_id: int = Field(foreign_key="users.id")
-    sender: Optional["DBUser"] = Relationship(back_populates="messages")
+    sender: Optional["DBUser"] = Relationship(back_populates="messages_group")
 
     group_chat_id: Optional[int] = Field(default=None, foreign_key="group_chats.id")
     group: Optional["DBGroupChat"] = Relationship(back_populates="messages")

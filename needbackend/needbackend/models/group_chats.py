@@ -25,7 +25,7 @@ class DBGroupChat(BaseGroupChat,SQLModel, table=True):
     created_at: Optional[str] = None
 
     members: List["GroupChatMember"] = Relationship(back_populates="group_chat")
-    messages: List["DBMessage"] = Relationship(back_populates="group")
+    messages: List["DBMessageGroup"] = Relationship(back_populates="group")
 
 class GroupChatMember(SQLModel, table=True):
     __tablename__ = "group_chat_members"
