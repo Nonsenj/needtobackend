@@ -25,7 +25,7 @@ class UpdataPost(BasePost):
     pass
 
 class DBPost(BasePost, SQLModel, table=True):
-    __tablename__ = "post"
+    __tablename__ = "posts"
     id: Optional[int] = Field(default=None, primary_key=True)
     time_stemp: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
