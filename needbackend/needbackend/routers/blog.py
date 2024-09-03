@@ -23,6 +23,7 @@ async def read_items(
     
     result = await session.exec(
         select(models.DBBlog).where(models.DBBlog.completed == True)
+        .options(selectinload(models.DBBlog.list_tags))
         .offset((page-1) * SIZE_PER_PAGE).limit(SIZE_PER_PAGE)
     )
 
@@ -43,67 +44,53 @@ async def create_blog(
     blog: models.CreateBlog,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
     session: Annotated[AsyncSession, Depends(models.get_session)],
-) -> models.Blog | None:
-    db_blog = models.DBBlog.model_validate(blog)
+) -> models.Blog:
+    md_blog = blog.model_dump(exclude={"list_tags"})
+    print(blog)
+    db_blog = models.DBBlog.model_validate(md_blog)
+    print("db.............", db_blog.list_tags)
+
+    for tag in blog.list_tags:
+        result = await session.exec(select(models.DBTag).where(models.DBTag.name == tag.name))
+        db_tag = result.first()
+        if db_tag:
+            db_blog.list_tags.append(db_tag)
+        else:
+            db_blog.list_tags.append(models.DBTag(name=tag.name))
+
     session.add(db_blog)
     await session.commit()
     await session.refresh(db_blog)
-    return  models.Blog.model_validate(db_blog)
+    return  db_blog
 
-# @router.post("")
-# async def create_blog(
-#     session: Annotated[AsyncSession, Depends(models.get_session)],
-# ):
-#     test_tag = models.DBTag(name="test tag")
+@router.post("/dummy")
+async def insert_dummy(
+    session: Annotated[AsyncSession, Depends(models.get_session)],
+):
+    test_tag = models.DBTag(name="test tag")
+    test_blog = models.DBBlog(
+        title= "test blog",
+        list_tags= [test_tag]
+    )
 
-#     test_blog = models.DBBlog(
-#         title= "test blog",
-#         author= "test author",
-#         list_tag= [test_tag]
-#     )
-
-#     session.add(test_blog)
-#     await session.commit()
-#     await session.refresh(test_blog)
-
-#     return models.Blog.model_validate(test_blog)
+    session.add(test_blog)
+    await session.commit()
+    await session.refresh(test_blog)
+    return models.Blog.model_validate(test_blog)
     
-
 @router.get("/{blog_id}")
 async def read_blog(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-) -> models.Blog:
-    db_blog = await session.get(models.DBBlog, blog_id)
+) -> models.BlogWithTag:
+    result = await session.exec(select(models.DBBlog).where(models.DBBlog.id == blog_id).options(selectinload(models.DBBlog.list_tags)))
+    db_blog = result.first()
+    # print(db_blog.list_tags)
     if db_blog:
-        return models.Blog.model_validate(db_blog)
+        return models.BlogWithTag.model_validate(db_blog)
     
     raise HTTPException(status_code=404, detail="Blog not found")
 
-# @router.get("/{blog_id}")
-# async def read_blog(
-#     blog_id: int,
-#     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-# ) -> models.Blog:
-#     statement = select(models.DBBlog).where(models.DBBlog.id == blog_id)
-#     result = await session.exec(statement)
-#     db_blog = result.first()
-
-#     if db_blog:
-#         db_blog_with_tag = models.Blog(
-#             id=db_blog.id,
-#             title=db_blog.title,
-#             author=db_blog.author,
-#             content=db_blog.content,
-#             subtitle=db_blog.subtitle,
-#             completed=db_blog.completed,
-#             created_at=db_blog.created_at,
-#             tags= [models.DBTag(id=tag.id, name=tag.name) for tag in db_blog.list_tag]
-            
-#         )
-#         return db_blog_with_tag
-    
-#     raise HTTPException(status_code=404, detail="Blog not found")
 
 @router.put("/{blog_id}")
 async def update_blog(
