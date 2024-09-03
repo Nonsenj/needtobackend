@@ -6,7 +6,6 @@ from sqlmodel import SQLModel, Field, Relationship
 
 from . import users
 from . import posts
-from . import blogs
 
 
 class BaseComment(BaseModel):
@@ -37,7 +36,7 @@ class DBCommentBlog(BlogComment, SQLModel, table=True):
     user_id: int = Field(default=None, foreign_key="users.id")
     user: users.DBUser | None = Relationship()
     blog_id: int = Field(default=None, foreign_key="blogs.id")
-    blog: blogs.DBBlog | None = Relationship()
+    blog:  Optional["DBBlog"]= Relationship(back_populates="comments")  # type: ignore
 
 class CommentOfPost(PostComment):
     id: int 

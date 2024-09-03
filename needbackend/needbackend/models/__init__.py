@@ -16,7 +16,7 @@ from . import blogs
 from . import messages
 from . import individual_chats
 from . import group_chats
-from . import comment
+from . import comments
 
 from .posts import *
 from .users import *
@@ -26,7 +26,7 @@ from .blogs import *
 from .messages import *
 from .individual_chats import *
 from .group_chats import *
-from .comment import *
+from .comments import *
 
 connect_args = {}
 

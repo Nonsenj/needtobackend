@@ -48,7 +48,6 @@ async def create_blog(
     md_blog = blog.model_dump(exclude={"list_tags"})
     print(blog)
     db_blog = models.DBBlog.model_validate(md_blog)
-    print("db.............", db_blog.list_tags)
 
     for tag in blog.list_tags:
         result = await session.exec(select(models.DBTag).where(models.DBTag.name == tag.name))
@@ -62,30 +61,20 @@ async def create_blog(
     await session.commit()
     await session.refresh(db_blog)
     return  db_blog
-
-@router.post("/dummy")
-async def insert_dummy(
-    session: Annotated[AsyncSession, Depends(models.get_session)],
-):
-    test_tag = models.DBTag(name="test tag")
-    test_blog = models.DBBlog(
-        title= "test blog",
-        list_tags= [test_tag]
-    )
-
-    session.add(test_blog)
-    await session.commit()
-    await session.refresh(test_blog)
-    return models.Blog.model_validate(test_blog)
     
-@router.get("/{blog_id}")
-async def read_blog(
+@router.get("/tags/comments/{blog_id}")
+async def read_blog_with_tags_and_comments(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-) -> models.BlogWithTag:
-    result = await session.exec(select(models.DBBlog).where(models.DBBlog.id == blog_id).options(selectinload(models.DBBlog.list_tags)))
+) :
+    result = await session.exec(
+        select(models.DBBlog)
+        .where(models.DBBlog.id == blog_id)
+        .options(selectinload(models.DBBlog.list_tags))
+        .options(selectinload(models.DBBlog.comments))
+        )
     db_blog = result.first()
-    # print(db_blog.list_tags)
+    print(db_blog)
     if db_blog:
         return models.BlogWithTag.model_validate(db_blog)
     

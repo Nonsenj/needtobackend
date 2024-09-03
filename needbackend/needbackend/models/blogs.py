@@ -3,6 +3,9 @@ from typing import Optional
 import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field, Relationship
+from . import users
+from .comments import CommentOfBlog
+
 
 class BlogTagLink(SQLModel, table=True):
     blog_id: int | None = Field(default=None, foreign_key="blogs.id", primary_key=True)
@@ -32,6 +35,9 @@ class DBBlog(BaseBlog, SQLModel, table=True):
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     list_tags: list[DBTag] | None = Relationship(back_populates="list_blogs", link_model=BlogTagLink)
+    comments: list[Optional["DBCommentBlog"]] = Relationship(back_populates="blog")  # type: ignore
+    user_id: int = Field(default=None, foreign_key="users.id")
+    user: users.DBUser | None = Relationship()
 
 class Tag(BaseTag):
     id: int
@@ -43,11 +49,11 @@ class Blog(BaseBlog):
     id: int
     created_at: datetime.datetime
 
-class BlogWithTag(BaseBlog):
-    id: int
-    created_at: datetime.datetime
-    list_tags: list[Tag] | None = []
+class BlogWithComments(Blog):
+    comments: list[CommentOfBlog] | None = []
 
+class BlogWithTag(BlogWithComments):
+    list_tags: list[Tag] | None = []
 
 class CreateBlog(BaseBlog):
     list_tags: list[CreateTag] | None = []
@@ -57,7 +63,7 @@ class UpdataBlog(BaseBlog):
 
 class BlogList(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    blogs: list[BlogWithTag]
+    blogs: list[Blog]
     page: int
     page_size: int
     size_per_page: int

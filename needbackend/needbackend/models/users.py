@@ -89,17 +89,12 @@ class DBUser(BaseUser, SQLModel, table=True):
     updated_date: datetime.datetime = Field(default_factory=datetime.datetime.now)
     last_login_date: datetime.datetime | None = Field(default=None)
 
-    group_chats: List["GroupChatMember"] = Relationship(back_populates="user")
-    individual_chats_as_user1: List["DBIndividualChat"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user1_id]"})
-    individual_chats_as_user2: List["DBIndividualChat"] = Relationship(sa_relationship_kwargs={"foreign_keys": "[DBIndividualChat.user2_id]"})
-    messages: List["DBMessage"] = Relationship(back_populates="sender")
-
     async def has_roles(self, roles):
         for role in roles:
             if role in self.roles:
                 return True
         return False
-
+    
     async def get_encrypted_password(self, plain_password):
         return bcrypt.hashpw(
             plain_password.encode("utf-8"), salt=bcrypt.gensalt()
