@@ -6,7 +6,7 @@ from sqlmodel import SQLModel, Field, Relationship
 
 class BaseGroupChat(BaseModel):
     name : str
-    description: Optional[str] = None
+    description: str | None = None
 
 class CreatedGroupChat(BaseGroupChat):
     pass
@@ -24,17 +24,12 @@ class DBGroupChat(BaseGroupChat,SQLModel, table=True):
     description: Optional[str] = None
     created_at: Optional[str] = None
 
-    members: List["GroupChatMember"] = Relationship(back_populates="group_chat")
-    messages: List["DBMessage"] = Relationship(back_populates="group")
-
 class GroupChatMember(SQLModel, table=True):
     __tablename__ = "group_chat_members"
     user_id: int = Field(foreign_key="users.id", primary_key=True)
     group_chat_id: int = Field(foreign_key="group_chats.id", primary_key=True)
     joined_at: Optional[str] = None
 
-    user: Optional["DBUser"] = Relationship(back_populates="group_chats")
-    group_chat: Optional[DBGroupChat] = Relationship(back_populates="members")
 
 class GroupChatList(BaseModel):
     group_chats: List[GroupChat]

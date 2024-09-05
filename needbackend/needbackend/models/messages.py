@@ -4,35 +4,48 @@ import pydantic
 from pydantic import BaseModel, EmailStr, ConfigDict
 from sqlmodel import SQLModel, Field, Relationship
 
+from . import users
+from . import group_chats
+
 class BaseMessage(BaseModel) :
     model_config = ConfigDict(from_attributes=True)
     content: str 
-    sender_id: int | None
+    sender_id: int | None = 0
 
-class CreatedMessageIndiChat(BaseMessage) :
-    individual_chat_id: int | None
+class MessageIndiChat(BaseMessage) :
+    individual_chat_id: int | None = 0
 
-class CreatedMessageGroupChat(BaseMessage) :
-    group_chat_id: int | None
+class CreateMessageIndiChat(MessageIndiChat) :
+    pass
+
+class MessageGroupChat(BaseMessage) :
+    group_chat_id: int | None = 0
 
 class Message(BaseMessage) :
     id: int
-    message_timestamp: datetime.datetime | None = pydantic.Field(json_schema_extra=dict(example="2023-01-01T00:00:00.000000"), default=None)
+    created_at: datetime.datetime
 
-class DBMessage(BaseMessage,SQLModel, table=True):
-    __tablename__ = "messages"
+class DBMessageChat(MessageIndiChat, SQLModel, table=True):
+    __tablename__ = "messages_chat"
     id: Optional[int] = Field(default=None, primary_key=True)
-    content: str
-    timestamp: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
     sender_id: int = Field(foreign_key="users.id")
-    sender: Optional["DBUser"] = Relationship(back_populates="messages")
+    sender: users.DBUser = Relationship()
 
-    group_chat_id: Optional[int] = Field(default=None, foreign_key="group_chats.id")
-    group: Optional["DBGroupChat"] = Relationship(back_populates="messages")
+    individual_chat_id: int = Field(default=None, foreign_key="individual_chats.id")
+    chat: Optional["DBIndividualChat"] = Relationship()
 
-    individual_chat_id: Optional[int] = Field(default=None, foreign_key="individual_chats.id")
-    chat: Optional["DBIndividualChat"] = Relationship(back_populates="messages")
+# class DBMessageGroup(MessageGroupChat, SQLModel, table=True):
+#     __tablename__ = "messages_group"
+#     id: Optional[int] = Field(default=None, primary_key=True)
+#     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
+
+#     sender_id: int = Field(foreign_key="users.id")
+#     sender: users.DBUser = Relationship()
+
+#     group_chat_id: int = Field(default=None, foreign_key="group_chats.id")
+#     group: individual_chats.DBIndividualChat = Relationship()
 
 class MessageList(BaseModel):
     model_config = ConfigDict(from_attributes=True)
