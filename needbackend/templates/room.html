@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Example with Room ID</title>
+</head>
+
+<body>
+    <h1>WebSocket Chat Example</h1>
+    <h2>Your ID: <span id="ws-id"></span></h2>
+
+    <!-- Room ID input -->
+    <label for="roomId">Room ID: </label>
+    <input type="text" id="roomId" placeholder="Enter room ID" />
+    <button onclick="connectToRoom()">Connect</button>
+
+    <form action="" onsubmit="sendMessage(event)">
+        <input type="text" id="messageText" autocomplete="off" placeholder="Type a message" />
+        <button type="submit" disabled id="sendButton">Send</button>
+    </form>
+
+    <ul id="messages"></ul>
+
+    <script>
+        var client_id = Math.floor(Math.random() * 1000) + 1;
+        document.querySelector("#ws-id").textContent = client_id;
+
+        var socket;  // WebSocket object
+        var connected = false;  // Connection status
+
+        // Connect to the WebSocket server with the specified room ID
+        function connectToRoom() {
+            const roomId = document.getElementById("roomId").value;
+            if (!roomId) {
+                alert("Please enter a room ID.");
+                return;
+            }
+            // Establish WebSocket connection to the specified room
+            socket = new WebSocket(`ws://localhost:8000/ws/${roomId}/${client_id}`);
+
+            socket.addEventListener('open', (event) => {
+                connected = true;
+                var messages = document.getElementById('messages');
+                var message = document.createElement('li');
+                var content = document.createTextNode('Connected to room ' + roomId);
+                message.appendChild(content);
+                messages.appendChild(message);
+
+                // Enable the send button after connecting
+                document.getElementById('sendButton').disabled = false;
+            });
+
+            // Event handler for receiving messages
+            socket.onmessage = (event) => {
+                var messages = document.getElementById('messages');
+                var message = document.createElement('li');
+                var content = document.createTextNode(event.data);
+                message.appendChild(content);
+                messages.appendChild(message);
+            };
+
+            // Handle connection closure
+            socket.onclose = () => {
+                connected = false;
+                document.getElementById('sendButton').disabled = true;
+                alert('Disconnected from the server');
+            };
+        }
+
+        // Send a message to the WebSocket server
+        function sendMessage(event) {
+            if (connected) {
+                var input = document.getElementById("messageText");
+                socket.send(input.value);
+                input.value = '';
+            } else {
+                alert("Not connected to any room.");
+            }
+            event.preventDefault();
+        }
+    </script>
+</body>
+
+</html>

@@ -2,7 +2,6 @@ from . import root
 from . import users
 from . import authentication
 from . import post
-
 from . import admins
 from . import messages_router
 from . import feeds
@@ -10,6 +9,7 @@ from . import blog
 from . import group_chats_router
 from . import individual_chats_router
 from . import comment
+from . import websockets
 
 def init_router(app):
     app.include_router(root.router)
@@ -23,5 +23,6 @@ def init_router(app):
     app.include_router(feeds.router)
     app.include_router(blog.router)
     app.include_router(comment.router)
+    app.include_router(websockets.router)
 
   
