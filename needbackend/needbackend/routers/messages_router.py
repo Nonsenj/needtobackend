@@ -31,6 +31,18 @@ async def create_message_individual_chat(
     await session.refresh(db_message)
     return db_message
 
+@router.post("/group")
+async def create_message_group_chat(
+    message: models.CreateMessageGroupChat,
+    session: Annotated[AsyncSession, Depends(models.get_session)]
+) -> models.Message | None:
+    db_message = models.DBMessageGroup.model_validate(message)
+    session.add(db_message)
+    print(db_message)
+    await session.commit()
+    await session.refresh(db_message)
+    return db_message
+
 # @router.get("/{message_id}", response_model=DBMessage)
 # async def get_message(
 #     message_id: int,
