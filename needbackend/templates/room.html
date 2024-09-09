@@ -38,7 +38,7 @@
                 return;
             }
             // Establish WebSocket connection to the specified room
-            socket = new WebSocket(`ws://localhost:8000/ws/${roomId}/${client_id}`);
+            socket = new WebSocket(`ws://localhost:8000/websockets/ws/${roomId}/${client_id}`);
 
             socket.addEventListener('open', (event) => {
                 connected = true;

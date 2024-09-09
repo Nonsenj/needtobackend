@@ -5,11 +5,16 @@ monkey.patch_all()
 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
 from . import models
 from . import routers
 
+origins = [
+    "http://localhost:57805",
+    "http://localhost:8080",
+]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,6 +29,14 @@ def create_app(settings=None):
         settings = config.get_settings()
 
     app = FastAPI(lifespan=lifespan)
+    
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     models.init_db(settings)
 
