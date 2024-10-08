@@ -4,6 +4,7 @@ from gevent import monkey
 monkey.patch_all()
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -37,6 +38,8 @@ def create_app(settings=None):
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # app.mount("/Static", StaticFiles(directory="./static"), name="Static")
 
     models.init_db(settings)
 

@@ -9,7 +9,7 @@ from . import blog
 from . import group_chats_router
 from . import individual_chats_router
 from . import comment
-from . import websockets
+from . import file
 
 def init_router(app):
     app.include_router(root.router)
@@ -23,6 +23,6 @@ def init_router(app):
     app.include_router(feeds.router)
     app.include_router(blog.router)
     app.include_router(comment.router)
-    app.include_router(websockets.router)
+    app.include_router(file.router)
 
   
