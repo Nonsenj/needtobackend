@@ -17,6 +17,7 @@ from . import messages
 from . import individual_chats
 from . import group_chats
 from . import comments
+from . import article
 
 from .posts import *
 from .users import *
@@ -27,6 +28,7 @@ from .messages import *
 from .individual_chats import *
 from .group_chats import *
 from .comments import *
+from .article import *
 
 connect_args = {}
 

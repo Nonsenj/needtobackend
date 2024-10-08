@@ -10,6 +10,7 @@ from . import group_chats_router
 from . import individual_chats_router
 from . import comment
 from . import file
+from . import article
 
 def init_router(app):
     app.include_router(root.router)
@@ -21,8 +22,9 @@ def init_router(app):
     app.include_router(individual_chats_router.router)
     app.include_router(group_chats_router.router)
     app.include_router(feeds.router)
-    app.include_router(blog.router)
+    # app.include_router(blog.router)
     app.include_router(comment.router)
     app.include_router(file.router)
+    app.include_router(article.router)
 
   
