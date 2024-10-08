@@ -5,6 +5,7 @@ import base64
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from ..services import directory
+from ..services import path_local
 from .. import models
 from .. import deps
 
@@ -16,10 +17,10 @@ async def convert_image(file: UploadFile,
     ):
     path = await directory.Create_Directory_User(current_user.username)
     random_name = str(uuid.uuid4())
-    decodeit = open(f"{path}/Profile_{random_name}.jpg", 'wb')
+    decodeit = open(f"{path}/{random_name}.jpg", 'wb')
     contents = await file.read()
     decodeit.write(contents)
-    img_path = f"http://localhost:8000/file/images?id=./static/{current_user.username}/" + str(random_name) + ".jpg"
+    img_path = await path_local.Create_Path_Image(current_user.username, random_name,)
 
     return {"image_url": img_path}
 

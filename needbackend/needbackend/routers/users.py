@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, UploadFile
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
+from sqlmodel import Field, SQLModel, Session, select, func
 
 from typing import Annotated , List
 
+import uuid
+from ..services import directory
+from ..services import path_local
 from .. import deps
 from .. import models
 
@@ -62,7 +65,7 @@ async def change_password(
     user_id: str,
     password_update: models.ChangedPassword,
     current_user: models.User = Depends(deps.get_current_user),
-) -> dict():
+):
 
     result = await session.get(models.DBUser, user_id)
 
@@ -83,28 +86,81 @@ async def change_password(
     await session.commit()
 
 
-@router.put("/{user_id}/update")
+@router.put("/update")
 async def update(
-    request: Request,
-    user_id: str,
     user_update: models.UpdatedUser,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
     current_user: models.User = Depends(deps.get_current_user),
 ) -> models.User:
 
-    db_user = await session.get(models.DBUser, user_id)
+    db_user = await session.get(models.DBUser, current_user.id)
 
-    if db_user:
+    if not db_user:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found this user",
         )
+    
+    db_user.sqlmodel_update(user_update)
+    session.add(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
-    if not db_user.verify_password(password_update.current_password):
+    return db_user
+
+@router.put("/profile_img")
+async def update_profile_img(
+    file: UploadFile,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
+    current_user: models.User = Depends(deps.get_current_user),
+) -> models.User:
+    path = await directory.Create_Directory_User(current_user.username)
+    random_name = str(uuid.uuid4())
+    decodeit = open(f"{path}/{random_name}.jpg", 'wb')
+    contents = await file.read()
+    decodeit.write(contents)
+    img_path = await path_local.Create_Path_Image(current_user.username, random_name,)
+
+    user_update = models.UpdatedImageProfile(profile_img=img_path)
+
+    db_user = await session.get(models.DBUser, current_user.id)
+
+    if not db_user:
         raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail="Incorrect password",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found this user",
         )
+    
+    db_user.sqlmodel_update(user_update)
+    session.add(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
+    return db_user
+
+@router.put("/cover_img")
+async def update_cover_img(
+    file: UploadFile,
+    session: Annotated[AsyncSession, Depends(models.get_session)],
+    current_user: models.User = Depends(deps.get_current_user),
+) -> models.User:
+    path = await directory.Create_Directory_User(current_user.username)
+    random_name = str(uuid.uuid4())
+    decodeit = open(f"{path}/{random_name}.jpg", 'wb')
+    contents = await file.read()
+    decodeit.write(contents)
+    img_path = await path_local.Create_Path_Image(current_user.username, random_name,)
+
+    user_update = models.UpdatedImageCover(cover_img=img_path)
+
+    db_user = await session.get(models.DBUser, current_user.id)
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found this user",
+        )
+    
     db_user.sqlmodel_update(user_update)
     session.add(db_user)
     await session.commit()

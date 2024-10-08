@@ -14,8 +14,11 @@ class BaseUser(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
     email: str = pydantic.Field(json_schema_extra=dict(example="admin@email.local"))
     username: str = pydantic.Field(json_schema_extra=dict(example="admin"))
-    first_name: str = pydantic.Field(json_schema_extra=dict(example="Firstname"))
-    last_name: str = pydantic.Field(json_schema_extra=dict(example="Lastname"))
+    first_name: str | None = None
+    last_name: str | None = None
+    profile_img: str | None = None
+    cover_img: str | None = None
+
 
 class User(BaseUser):
     id: int
@@ -58,8 +61,16 @@ class RegisteredUser(BaseUser):
 
 
 class UpdatedUser(BaseUser):
-    roles: list[str]
+    first_name: str | None = None
+    last_name: str | None = None
+    profile_img: str | None = None
+    cover_img: str | None = None
 
+class UpdatedImageProfile(BaseModel):
+    profile_img: str
+
+class UpdatedImageCover(BaseModel):
+    cover_img: str 
 
 class Token(BaseModel):
     access_token: str
@@ -106,28 +117,28 @@ class DBUser(BaseUser, SQLModel, table=True):
             plain_password.encode("utf-8"), self.password.encode("utf-8")
         )
 
-class UserProfile(BaseUser):
-    education_level: str
-    profile_picture: str
-    bio: str
-    phone_number: str
-    secondary_email: str
-    social_media_links: list[str]
-    interests: list[str]
-    activity_status: str
-    role: str
+# class UserProfile(BaseUser):
+#     education_level: str
+#     profile_picture: str
+#     bio: str
+#     phone_number: str
+#     secondary_email: str
+#     social_media_links: list[str]
+#     interests: list[str]
+#     activity_status: str
+#     role: str
 
-    async def update_profile(self, updated_data):
-        for key, value in updated_data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
+#     async def update_profile(self, updated_data):
+#         for key, value in updated_data.items():
+#             if hasattr(self, key):
+#                 setattr(self, key, value)
 
-class CreatedUserProfile(UserProfile):
-    pass
+# class CreatedUserProfile(UserProfile):
+#     pass
 
-class UpdateUserProfile(UserProfile):
-    pass
+# class UpdateUserProfile(UserProfile):
+#     pass
 
-class DeleteUserProfile(UserProfile):
-    pass
+# class DeleteUserProfile(UserProfile):
+#     pass
 

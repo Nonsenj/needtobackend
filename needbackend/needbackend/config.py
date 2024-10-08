@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    Server_URL: str
     SQLDB_URL: str
     SECRET_KEY: str = "secret"
 
