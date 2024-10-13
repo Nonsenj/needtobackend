@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import File, UploadFile
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
+import uuid
 
 from typing import Annotated , List
 
 from .. import deps
 from .. import models
+from .. import service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -119,3 +122,12 @@ async def list_group_chats(
     user_list = await session.exec(select(models.DBUser))
     return user_list.all()
     
+@router.post("/upload_profile") 
+async def upload_profile(file: UploadFile = File(...)):
+    # Generate a unique filename
+    file.filename = f"{uuid.uuid4()}.jpg"
+
+    #Save the file to disk
+    test = service.create_directory("test") 
+
+    return None
