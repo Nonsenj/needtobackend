@@ -10,7 +10,6 @@ from . import posts
 
 class BaseComment(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    user_id: int | None = 0
     content: str
 
 class PostComment(BaseComment):

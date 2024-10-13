@@ -24,10 +24,12 @@ class DBTag(BaseTag, SQLModel, table=True):
 class BaseBlog(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     title: str = Field(index=True)
-    subtitle: str | None = None
+    author: str
+    authorProfileImage: str
+    blogImage: str | None = None
     content: str | None = None
+    reader: int | None = 0
     user_id: int | None = 0
-    completed: bool | None = False
 
 class DBBlog(BaseBlog, SQLModel, table=True):
     __tablename__ = "blogs"
@@ -48,14 +50,25 @@ class CreateTag(BaseTag):
 class Blog(BaseBlog):
     id: int
     created_at: datetime.datetime
+    dateOfLastRead: datetime.datetime | None = None
+
+class ReadBlog(BaseModel):
+    reader: int 
+    dateOfLastRead: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 class BlogWithComments(Blog):
     comments: list[CommentOfBlog] | None = []
 
-class BlogWithTag(BlogWithComments):
+class BlogWithTags(Blog):
     list_tags: list[Tag] | None = []
 
-class CreateBlog(BaseBlog):
+class BlogWithTagComments(BlogWithComments):
+    list_tags: list[Tag] | None = []
+
+class CreateBlog(BaseModel):
+    title: str = Field(index=True)
+    blogImage: str | None = None
+    content: str | None = None
     list_tags: list[CreateTag] | None = []
 
 class UpdataBlog(BaseBlog):
@@ -63,7 +76,7 @@ class UpdataBlog(BaseBlog):
 
 class BlogList(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    blogs: list[Blog]
+    blogs: list[BlogWithTags]
     page: int
     page_size: int
     size_per_page: int

@@ -22,7 +22,7 @@ async def read_items(
 ) -> models.BlogList:
     
     result = await session.exec(
-        select(models.DBBlog).where(models.DBBlog.completed == True)
+        select(models.DBBlog)
         .options(selectinload(models.DBBlog.list_tags))
         .offset((page-1) * SIZE_PER_PAGE).limit(SIZE_PER_PAGE)
     )
@@ -42,12 +42,11 @@ async def read_items(
 @router.post("")
 async def create_blog(
     blog: models.CreateBlog,
-    current_user: Annotated[models.users, Depends(deps.get_current_user)],
+    current_user: Annotated[models.User, Depends(deps.get_current_user)],
     session: Annotated[AsyncSession, Depends(models.get_session)],
 ) -> models.Blog:
     md_blog = blog.model_dump(exclude={"list_tags"})
-    print(blog)
-    db_blog = models.DBBlog.model_validate(md_blog)
+    db_blog = models.DBBlog(**md_blog)
 
     for tag in blog.list_tags:
         result = await session.exec(select(models.DBTag).where(models.DBTag.name == tag.name))
@@ -56,17 +55,21 @@ async def create_blog(
             db_blog.list_tags.append(db_tag)
         else:
             db_blog.list_tags.append(models.DBTag(name=tag.name))
+    
+    db_blog.author = current_user.username
+    db_blog.authorProfileImage = current_user.profile_img
+    db_blog.user_id = current_user.id
 
     session.add(db_blog)
     await session.commit()
     await session.refresh(db_blog)
     return  db_blog
     
-@router.get("/tags/comments/{blog_id}")
+@router.get("/{blog_id}/comments")
 async def read_blog_with_tags_and_comments(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-) :
+) -> models.BlogWithTagComments:
     result = await session.exec(
         select(models.DBBlog)
         .where(models.DBBlog.id == blog_id)
@@ -76,7 +79,7 @@ async def read_blog_with_tags_and_comments(
     db_blog = result.first()
     print(db_blog)
     if db_blog:
-        return models.BlogWithTag.model_validate(db_blog)
+        return models.BlogWithTagComments.model_validate(db_blog)
     
     raise HTTPException(status_code=404, detail="Blog not found")
 
