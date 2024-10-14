@@ -60,7 +60,9 @@ class RegisteredUser(BaseUser):
     password: str = pydantic.Field(json_schema_extra=dict(example="password"))
 
 
-class UpdatedUser(BaseUser):
+class UpdatedUser(BaseModel):
+    email: str | None = None
+    username: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     profile_img: str | None = None

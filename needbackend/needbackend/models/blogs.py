@@ -30,6 +30,7 @@ class BaseBlog(BaseModel):
     content: str | None = None
     reader: int | None = 0
     user_id: int | None = 0
+    dateOfLastRead: datetime.datetime | None = None
 
 class DBBlog(BaseBlog, SQLModel, table=True):
     __tablename__ = "blogs"
@@ -71,8 +72,11 @@ class CreateBlog(BaseModel):
     content: str | None = None
     list_tags: list[CreateTag] | None = []
 
-class UpdataBlog(BaseBlog):
-    pass
+class UpdataBlog(BaseModel):
+    title: str = Field(index=True)
+    blogImage: str | None = None
+    content: str | None = None
+    # list_tags: list[CreateTag] | None = []
 
 class BlogList(BaseModel):
     model_config = ConfigDict(from_attributes=True)

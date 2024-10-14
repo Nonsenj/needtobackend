@@ -80,6 +80,8 @@ async def example_user1(session: models.AsyncSession) -> models.DBUser:
         email="test@test.com",
         first_name="Firstname",
         last_name="lastname",
+        profile_img= "linkIMGprofile",
+        cover_img="linkIMGcover",
         last_login_date=datetime.datetime.now(tz=datetime.timezone.utc),
     )
 
@@ -114,87 +116,28 @@ async def oauth_token_user1(user1: models.DBUser) -> dict:
         user_id=user.id,
     )
 
-@pytest_asyncio.fixture(name="admin1")
-async def example_admin1(session: models.AsyncSession) -> models.DBUser:
-    password = "123456"
-    username = "admin1"
-
+@pytest_asyncio.fixture(name="tags1")
+async def example_list_tags(session: models.AsyncSession) -> models.DBTag:
+    tagname = "DEV"
     query = await session.exec(
-        models.select(models.DBUser).where(models.DBUser.username == username).limit(1)
-    )
-    admin = query.one_or_none()
-    if admin:
-        return admin
-
-    admin = models.DBUser(
-        username=username,
-        password=password,
-        email="admin1@example.com",
-        first_name="Admin",
-        last_name="User",
-        last_login_date=datetime.datetime.now(tz=datetime.timezone.utc),
-        role=models.UserRole.admin,
+            models.select(models.DBTag).where(models.DBTag.name == tagname).limit(1)
     )
 
-    await admin.set_password(password)
-    session.add(admin)
-    await session.commit()
-    await session.refresh(admin)
-    return admin
-
-
-@pytest_asyncio.fixture(name="token_admin1")
-async def oauth_token_admin1(admin1: models.DBUser) -> dict:
-    settings = SettingsTesting()
-    access_token_expires = datetime.timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-    admin = admin1
-    return models.Token(
-        access_token=security.create_access_token(
-            data={"sub": admin.id},
-            expires_delta=access_token_expires,
-        ),
-        refresh_token=security.create_refresh_token(
-            data={"sub": admin.id},
-            expires_delta=access_token_expires,
-        ),
-        token_type="Bearer",
-        scope="",
-        expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
-        expires_at=datetime.datetime.now() + access_token_expires,
-        issued_at=admin.last_login_date,
-        user_id=admin.id,
-    )
-
-@pytest_asyncio.fixture(name="post_user1")
-async def example_post_user1(
-    session: models.AsyncSession, user1: models.DBUser
-) -> models.DBPost:
-    content = "Test content"
-
-    query = await session.exec(
-        models.select(models.DBPost)
-        .where(models.DBPost.content == content, models.DBPost.user_id == user1.id)
-        .limit(1)
-    )
-
-    post = query.one_or_none()
-    if post:
-        return post
+    tag = query.one_or_none()
+    if tag:
+        return tag
     
-    post = models.DBPost(
-        content=content, user_id=user1.id, completed=True
-    )
-
-    session.add(post)
+    tag = models.DBTag(id=1, name=tagname)
+    
+    session.add(tag)
     await session.commit()
-    await session.refresh(post)
-    return post
+    await session.refresh(tag)
+    
+    return tag
 
 @pytest_asyncio.fixture(name="blog_user1")
 async def example_blog_user1(
-    session: models.AsyncSession, user1: models.DBUser
+    session: models.AsyncSession, user1: models.DBUser, tags1: models.DBTag
 ) -> models.DBBlog:
     title = "Test Blog Title"
 
@@ -209,38 +152,21 @@ async def example_blog_user1(
         return blog
     
     blog = models.DBBlog(
-        title=title, content="Test blog content", user_id=user1.id, completed=True
+        title=title, content="Test blog content", 
+        author= user1.username,
+        authorProfileImage= user1.profile_img,
+        reader= 0,
+        blogImage= "linkBlogImage",
+        user_id=user1.id, 
+        list_tags=[tags1]
     )
 
     session.add(blog)
     await session.commit()
     await session.refresh(blog)
+    print(blog)
     return blog
 
-@pytest_asyncio.fixture(name="comment_post_user1")
-async def example_comment_post_user1(
-    session: models.AsyncSession, user1: models.DBUser, post_user1: models.DBPost
-) -> models.DBCommentPost:
-    content = "Test comment on post"
-
-    query = await session.exec(
-        models.select(models.DBCommentPost)
-        .where(models.DBCommentPost.content == content, models.DBCommentPost.post_id == post_user1.id)
-        .limit(1)
-    )
-
-    comment = query.one_or_none()
-    if comment:
-        return comment
-
-    comment = models.DBCommentPost(
-        content=content, user_id=user1.id, post_id=post_user1.id, like=0
-    )
-
-    session.add(comment)
-    await session.commit()
-    await session.refresh(comment)
-    return comment
 
 @pytest_asyncio.fixture(name="comment_blog_user1")
 async def example_comment_blog_user1(

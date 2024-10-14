@@ -11,6 +11,8 @@ import math
 from .. import models
 from .. import deps
 
+SIZE_PER_PAGE = 50
+
 router = APIRouter(prefix="/comments", tags=["comments"])
 
 # @router.post("/post")
@@ -52,14 +54,27 @@ async def create_comment_blog(
 @router.get("/blog/{blog_id}")
 async def read_comment_blog(
     blog_id: int,
-    session:  Annotated[AsyncSession, Depends(models.get_session)],                            
-) -> models.CommentOfBlog:
-    result = await session.exec(select(models.DBCommentBlog).where(models.DBCommentBlog.blog_id == blog_id))
-    db_comment = result.first()
-    if db_comment:
-        return models.CommentOfBlog.model_validate(db_comment)
+    session:  Annotated[AsyncSession, Depends(models.get_session)],   
+    page: int = 1,                         
+) -> models.CommentList:
+    result = await session.exec(
+        select(models.DBCommentBlog)
+        .where(models.DBCommentBlog.blog_id == blog_id)
+        .offset((page-1) * SIZE_PER_PAGE).limit(SIZE_PER_PAGE)
+    )
+
+    comments = result.all()
+
+    page_count = int(
+        math.ceil(
+            (await session.exec(select(func.count(models.DBBlog.id)))).first()
+            / SIZE_PER_PAGE
+        )
+    )
+    return models.CommentList.model_validate(
+        dict(comments=comments, page_size=page_count, page=page, size_per_page=SIZE_PER_PAGE)
+    )
     
-    raise HTTPException(status_code=404, detail="Comment not found")
 
 # @router.put("/post/{post_id}")
 # async def update_comment_post(
@@ -77,17 +92,24 @@ async def read_comment_blog(
 
 #     return models.CommentOfPost.model_validate(db_comment)
 
-@router.put("/blog/{blog_id}")
+@router.put("/blog/{blog_id}/{comment_id}")
 async def update_comment_blog(
     blog_id: int,
+    comment_id: int,
     comment: models.UpdateCommentBlog,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
     session:  Annotated[AsyncSession, Depends(models.get_session)], 
 ) -> models.CommentOfBlog:
-    data = comment.model_dump()
-    result = await session.exec(select(models.DBCommentBlog).where(models.DBCommentBlog.blog_id == blog_id))
+    
+    result = await session.exec(
+        select(models.DBCommentBlog)
+        .where((models.DBCommentBlog.blog_id == blog_id) &
+               (models.DBCommentBlog.id == comment_id)
+            )
+    )
+    
     db_comment = result.first()
-    db_comment.sqlmodel_update(data)
+    db_comment.sqlmodel_update(comment)
     session.add(db_comment)
     await session.commit()
     await session.refresh(db_comment)
@@ -106,13 +128,20 @@ async def update_comment_blog(
 
 #     return dict(message="delete success")
 
-@router.delete("/blog/{blog_id}")
+@router.delete("/blog/{blog_id}/{comment_id}")
 async def delete_comment_blog(
     blog_id: int,
+    comment_id: int,
     current_user: Annotated[models.users, Depends(deps.get_current_user)],
     session:  Annotated[AsyncSession, Depends(models.get_session)], 
 ) -> dict:
-    result = await session.exec(select(models.DBCommentBlog).where(models.DBCommentBlog.blog_id == blog_id))
+    result = await session.exec(
+    select(models.DBCommentBlog)
+    .where(
+        (models.DBCommentBlog.blog_id == blog_id) &
+        (models.DBCommentBlog.id == comment_id)
+        )
+    )  
     db_comment = result.first()
     await session.delete(db_comment)
     await session.commit()

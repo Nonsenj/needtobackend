@@ -17,8 +17,12 @@ class PostComment(BaseComment):
     like: int | None = 0
 
 class BlogComment(BaseComment):
-    blog_id: int | None = 0
+    blog_id: int
 
+class BlogIDComment(BaseComment):
+    id: int
+    user_id: int 
+    
 class DBCommentPost(PostComment, SQLModel, table=True):
     __tablename__ = "commentpost"
     id: int | None = Field(default=None, primary_key=True)
@@ -52,5 +56,12 @@ class CreateCommentBlog(BlogComment):
 class UpdateCommentPost(PostComment):
     pass
 
-class UpdateCommentBlog(BlogComment):
-    pass
+class UpdateCommentBlog(BaseModel):
+    content: str
+
+class CommentList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    comments: list[BlogIDComment]
+    page: int
+    page_size: int
+    size_per_page: int

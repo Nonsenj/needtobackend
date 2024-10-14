@@ -64,8 +64,26 @@ async def create_blog(
     await session.commit()
     await session.refresh(db_blog)
     return  db_blog
+
+@router.get("/{blog_id}/tag")
+async def read_blog_with_tags_and_comments(
+    blog_id: int,
+    session:  Annotated[AsyncSession, Depends(models.get_session)],                            
+) -> models.BlogWithTags:
+    result = await session.exec(
+        select(models.DBBlog)
+        .where(models.DBBlog.id == blog_id)
+        .options(selectinload(models.DBBlog.list_tags))
+        )
     
-@router.get("/{blog_id}/comments")
+    db_blog = result.first()
+
+    if db_blog:
+        return models.BlogWithTags.model_validate(db_blog)
+    
+    raise HTTPException(status_code=404, detail="Blog not found")
+    
+@router.get("/{blog_id}/tagcomment")
 async def read_blog_with_tags_and_comments(
     blog_id: int,
     session:  Annotated[AsyncSession, Depends(models.get_session)],                            
@@ -88,22 +106,44 @@ async def read_blog_with_tags_and_comments(
 async def update_blog(
     blog_id: int,
     blog: models.UpdataBlog,
-    current_user: Annotated[models.users, Depends(deps.get_current_user)],
+    current_user: Annotated[models.User, Depends(deps.get_current_user)],
     session:  Annotated[AsyncSession, Depends(models.get_session)], 
 ) -> models.Blog:
-    data = blog.model_dump()
     db_blog = await session.get(models.DBBlog, blog_id)
-    db_blog.sqlmodel_update(data)
+
+    if not db_blog:
+        return HTTPException(status_code=404, detail="Blog not found")
+
+    db_blog.sqlmodel_update(blog)
     session.add(db_blog)
     await session.commit()
     await session.refresh(db_blog)
 
     return models.Blog.model_validate(db_blog)
 
+@router.put("/{blog_id}/read")
+async def update_read_blog(
+    blog_id: int,
+    current_user: Annotated[models.User, Depends(deps.get_current_user)],
+    session:  Annotated[AsyncSession, Depends(models.get_session)], 
+) -> models.Blog:
+    db_blog = await session.get(models.DBBlog, blog_id)
+    if not db_blog:
+        return HTTPException(status_code=404, detail="Blog not found")
+    
+    read_blog = models.ReadBlog(reader= db_blog.reader + 1)
+
+    db_blog.sqlmodel_update(read_blog)
+    session.add(db_blog)
+    await session.commit()
+    await session.refresh(db_blog)
+    
+    return models.Blog.model_validate(db_blog)
+
 @router.delete("/{blog_id}")
 async def delete_blog(
     blog_id: int,
-    current_user: Annotated[models.users, Depends(deps.get_current_user)],
+    current_user: Annotated[models.User, Depends(deps.get_current_user)],
     session:  Annotated[AsyncSession, Depends(models.get_session)], 
 ) -> dict:
     db_blog = await session.get(models.DBBlog, blog_id)
